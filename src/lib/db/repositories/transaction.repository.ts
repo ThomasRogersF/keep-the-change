@@ -34,7 +34,7 @@ class TransactionRepository extends BaseRepository<Transaction> {
       .where("date")
       .between(start, end, true, true)
       .filter(
-        (t) => t.type === "expense" && mainAccountIds.includes(t.accountId)
+        (t: Transaction) => t.type === "expense" && mainAccountIds.includes(t.accountId)
       )
       .toArray();
   }

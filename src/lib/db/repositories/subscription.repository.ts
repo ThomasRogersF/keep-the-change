@@ -15,7 +15,7 @@ class SubscriptionRepository extends BaseRepository<Subscription> {
     return this.table
       .where("nextRenewalDate")
       .between(from, to, true, true)
-      .filter((s) => s.active)
+      .filter((s: Subscription) => s.active)
       .sortBy("nextRenewalDate");
   }
 

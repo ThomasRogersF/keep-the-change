@@ -1,5 +1,3 @@
-import { type Table } from "dexie";
-
 export interface IRepository<T> {
   getAll(): Promise<T[]>;
   getById(id: string): Promise<T | undefined>;
@@ -8,8 +6,9 @@ export interface IRepository<T> {
   delete(id: string): Promise<void>;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class BaseRepository<T extends { id: string }> implements IRepository<T> {
-  constructor(protected table: Table<T, string>) {}
+  constructor(protected table: any) {}
 
   async getAll(): Promise<T[]> {
     return this.table.toArray();
@@ -36,7 +35,7 @@ export class BaseRepository<T extends { id: string }> implements IRepository<T> 
     await this.table.update(id, {
       ...data,
       updatedAt: new Date(),
-    } as Partial<T>);
+    });
   }
 
   async delete(id: string): Promise<void> {
