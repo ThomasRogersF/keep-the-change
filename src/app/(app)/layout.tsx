@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-auth";
 import { AppShell } from "@/components/layout/app-shell";
 import { Toaster } from "@/components/ui/sonner";
+import { AutoSyncProvider } from "@/components/sync/auto-sync-provider";
 import { Loader2 } from "lucide-react";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -33,10 +34,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <AppShell>
-        {children}
-        <Toaster position="bottom-right" richColors />
-      </AppShell>
+      <AutoSyncProvider>
+        <AppShell>
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </AppShell>
+      </AutoSyncProvider>
     </AuthGuard>
   );
 }

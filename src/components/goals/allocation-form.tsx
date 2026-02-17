@@ -90,6 +90,7 @@ export function AllocationForm({ goalId, editId, open, onOpenChange }: Allocatio
           ...data,
           createdAt: new Date(),
           updatedAt: new Date(),
+          deletedAt: null,
         });
         toast.success("Contribution added");
       }

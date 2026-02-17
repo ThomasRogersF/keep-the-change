@@ -8,7 +8,8 @@ class AccountRepository extends BaseRepository<Account> {
   }
 
   async getByType(type: "main" | "external"): Promise<Account[]> {
-    return this.table.where("type").equals(type).toArray();
+    const results = await this.table.where("type").equals(type).toArray();
+    return results.filter((a: Account) => !a.deletedAt);
   }
 
   async getMainAccountIds(): Promise<string[]> {

@@ -71,6 +71,8 @@ export function AccountForm() {
           id: crypto.randomUUID(),
           ...data,
           createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
         });
         toast.success("Account created");
       }

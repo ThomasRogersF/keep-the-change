@@ -8,19 +8,22 @@ class TransactionRepository extends BaseRepository<Transaction> {
   }
 
   async getByDateRange(start: Date, end: Date): Promise<Transaction[]> {
-    return this.table
+    const results = await this.table
       .where("date")
       .between(start, end, true, true)
       .reverse()
       .sortBy("date");
+    return results.filter((t: Transaction) => !t.deletedAt);
   }
 
   async getByAccount(accountId: string): Promise<Transaction[]> {
-    return this.table.where("accountId").equals(accountId).toArray();
+    const results = await this.table.where("accountId").equals(accountId).toArray();
+    return results.filter((t: Transaction) => !t.deletedAt);
   }
 
   async getByCategory(categoryId: string): Promise<Transaction[]> {
-    return this.table.where("categoryId").equals(categoryId).toArray();
+    const results = await this.table.where("categoryId").equals(categoryId).toArray();
+    return results.filter((t: Transaction) => !t.deletedAt);
   }
 
   async getExpensesForMonth(
@@ -34,7 +37,7 @@ class TransactionRepository extends BaseRepository<Transaction> {
       .where("date")
       .between(start, end, true, true)
       .filter(
-        (t: Transaction) => t.type === "expense" && mainAccountIds.includes(t.accountId)
+        (t: Transaction) => !t.deletedAt && t.type === "expense" && mainAccountIds.includes(t.accountId)
       )
       .toArray();
   }
@@ -43,15 +46,17 @@ class TransactionRepository extends BaseRepository<Transaction> {
     const [year, mon] = month.split("-").map(Number);
     const start = new Date(year, mon - 1, 1);
     const end = new Date(year, mon, 0, 23, 59, 59);
-    return this.table
+    const results = await this.table
       .where("date")
       .between(start, end, true, true)
       .reverse()
       .sortBy("date");
+    return results.filter((t: Transaction) => !t.deletedAt);
   }
 
   async getRecent(limit: number): Promise<Transaction[]> {
-    return this.table.orderBy("date").reverse().limit(limit).toArray();
+    const all = await this.table.orderBy("date").reverse().toArray();
+    return all.filter((t: Transaction) => !t.deletedAt).slice(0, limit);
   }
 }
 

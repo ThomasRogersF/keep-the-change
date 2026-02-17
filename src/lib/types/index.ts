@@ -4,6 +4,8 @@ export interface Account {
   type: "main" | "external";
   currency: string;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface Category {
@@ -12,12 +14,16 @@ export interface Category {
   icon: string;
   colorToken: string;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface Merchant {
   id: string;
   name: string;
   createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface Transaction {
@@ -32,6 +38,7 @@ export interface Transaction {
   tags: string[];
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface Subscription {
@@ -46,6 +53,7 @@ export interface Subscription {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface IncomeEntry {
@@ -56,6 +64,7 @@ export interface IncomeEntry {
   note?: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface Goal {
@@ -67,6 +76,7 @@ export interface Goal {
   archived: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface GoalAllocation {
@@ -77,6 +87,7 @@ export interface GoalAllocation {
   note?: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface GoalSpendLink {
@@ -86,4 +97,25 @@ export interface GoalSpendLink {
   amountApplied: number; // positive
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface SyncState {
+  userId: string;
+  deviceId: string;
+  initialSyncCompleted: boolean;
+  lastPushAt: Date | null;
+  lastPullAt: Date | null;
+  lastSyncAt: Date | null;
+  lastSyncStatus: "idle" | "syncing" | "success" | "error";
+  lastSyncError: string | null;
+  syncLog: SyncLogEntry[];
+}
+
+export interface SyncLogEntry {
+  timestamp: Date;
+  action: "push" | "pull" | "conflict" | "error";
+  table: string;
+  count: number;
+  message?: string;
 }

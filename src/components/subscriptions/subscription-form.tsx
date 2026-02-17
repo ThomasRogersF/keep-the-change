@@ -92,6 +92,7 @@ export function SubscriptionForm() {
           ...data,
           createdAt: new Date(),
           updatedAt: new Date(),
+          deletedAt: null,
         });
         toast.success("Subscription added");
       }

@@ -8,7 +8,9 @@ class CategoryRepository extends BaseRepository<Category> {
   }
 
   async getByName(name: string): Promise<Category | undefined> {
-    return this.table.where("name").equals(name).first();
+    const result = await this.table.where("name").equals(name).first();
+    if (result && result.deletedAt) return undefined;
+    return result;
   }
 }
 

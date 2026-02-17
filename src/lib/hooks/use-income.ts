@@ -5,7 +5,10 @@ import { db } from "@/lib/db/database";
 
 export function useIncome(month: string) {
   return useLiveQuery(
-    () => db.incomeEntries.where("month").equals(month).toArray(),
+    async () => {
+      const results = await db.incomeEntries.where("month").equals(month).toArray();
+      return results.filter((e) => !e.deletedAt);
+    },
     [month],
     []
   );
@@ -18,7 +21,9 @@ export function useIncomeTotal(month: string) {
         .where("month")
         .equals(month)
         .toArray();
-      return entries.reduce((sum, e) => sum + e.amount, 0);
+      return entries
+        .filter((e) => !e.deletedAt)
+        .reduce((sum, e) => sum + e.amount, 0);
     },
     [month],
     0

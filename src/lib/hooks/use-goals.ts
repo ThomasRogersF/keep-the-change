@@ -8,7 +8,7 @@ import type { Goal, GoalAllocation, GoalSpendLink } from "@/lib/types";
 
 export function useGoals(): Goal[] {
   return useLiveQuery(
-    () => db.goals.filter((g) => !g.archived).toArray(),
+    () => db.goals.filter((g) => !g.archived && !g.deletedAt).toArray(),
     [],
     []
   );
@@ -16,7 +16,7 @@ export function useGoals(): Goal[] {
 
 export function useArchivedGoals(): Goal[] {
   return useLiveQuery(
-    () => db.goals.filter((g) => g.archived).toArray(),
+    () => db.goals.filter((g) => g.archived && !g.deletedAt).toArray(),
     [],
     []
   );
@@ -24,7 +24,12 @@ export function useArchivedGoals(): Goal[] {
 
 export function useGoal(id: string | undefined) {
   return useLiveQuery(
-    () => (id ? db.goals.get(id) : undefined),
+    async () => {
+      if (!id) return undefined;
+      const goal = await db.goals.get(id);
+      if (goal && goal.deletedAt) return undefined;
+      return goal;
+    },
     [id],
     undefined
   );
@@ -75,7 +80,7 @@ export function useGoalProgress(goalId: string | undefined): GoalProgressData {
     async (): Promise<GoalProgressData> => {
       if (!goalId) return defaultProgress;
       const goal = await db.goals.get(goalId);
-      if (!goal) return defaultProgress;
+      if (!goal || goal.deletedAt) return defaultProgress;
 
       const allocated = await goalAllocationRepository.getSumByGoalId(goalId);
       const spent = await goalSpendLinkRepository.getSumByGoalId(goalId);
@@ -111,7 +116,7 @@ const defaultSummary: GoalsSummaryData = {
 export function useGoalsSummary(): GoalsSummaryData {
   return useLiveQuery(
     async (): Promise<GoalsSummaryData> => {
-      const goals = await db.goals.filter((g) => !g.archived).toArray();
+      const goals = await db.goals.filter((g) => !g.archived && !g.deletedAt).toArray();
       let totalSaved = 0;
       let totalTarget = 0;
 
