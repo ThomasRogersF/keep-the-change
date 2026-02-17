@@ -6,9 +6,10 @@ import { useSettingsStore } from "@/lib/stores/settings.store";
 import { CURRENCIES } from "@/lib/utils/constants";
 import { loadDemoData, clearAllData, exportAllData, importData } from "@/lib/db/seed";
 import { toast } from "sonner";
-import { Sun, Moon, Monitor, Download, Upload, Database, Trash2 } from "lucide-react";
+import { Sun, Moon, Monitor, Download, Upload, Database, Trash2, Target } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -32,7 +33,7 @@ import { cn } from "@/lib/utils";
 
 export function SettingsContent() {
   const { theme, setTheme } = useTheme();
-  const { currency, setCurrency } = useSettingsStore();
+  const { currency, setCurrency, subtractGoalsFromAvailable, setSubtractGoalsFromAvailable } = useSettingsStore();
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -156,6 +157,34 @@ export function SettingsContent() {
         </CardContent>
       </Card>
 
+      {/* Budgeting */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Target className="w-4 h-4" />
+            Budgeting
+          </CardTitle>
+          <CardDescription>Configure how goals affect your budget view</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="subtractGoals" className="cursor-pointer">
+                Subtract goal allocations from available to spend
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                When enabled, earmarked money is excluded from your available balance
+              </p>
+            </div>
+            <Switch
+              id="subtractGoals"
+              checked={subtractGoalsFromAvailable}
+              onCheckedChange={setSubtractGoalsFromAvailable}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Data */}
       <Card>
         <CardHeader>
@@ -189,7 +218,7 @@ export function SettingsContent() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Clear all data?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete all your transactions, subscriptions, income entries, accounts, categories, and merchants. This cannot be undone.
+                    This will permanently delete all your transactions, subscriptions, income entries, accounts, categories, merchants, and goals. This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

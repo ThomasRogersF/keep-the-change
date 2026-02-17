@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-type ModalType = "transaction" | "subscription" | "income" | "account" | "category" | null;
+type ModalType = "transaction" | "subscription" | "income" | "account" | "category" | "goal" | "goalAllocation" | "goalSpendLink" | null;
 
 interface ModalState {
   type: ModalType;

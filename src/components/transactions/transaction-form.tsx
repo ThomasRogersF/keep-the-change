@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transactionSchema, type TransactionFormData } from "@/lib/schemas/transaction.schema";
 import { db } from "@/lib/db/database";
 import { useAccounts } from "@/lib/hooks/use-accounts";
 import { useCategories } from "@/lib/hooks/use-categories";
+import { useGoals } from "@/lib/hooks/use-goals";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -32,10 +34,15 @@ export function TransactionForm() {
   const { activeModal, closeModal } = useUIStore();
   const accounts = useAccounts();
   const categories = useCategories();
+  const goals = useGoals();
 
   const isOpen = activeModal?.type === "transaction";
   const isEdit = activeModal?.mode === "edit";
   const editId = activeModal?.id;
+
+  const [applyToGoal, setApplyToGoal] = useState(false);
+  const [selectedGoalId, setSelectedGoalId] = useState("");
+  const [goalAmount, setGoalAmount] = useState(0);
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -49,6 +56,15 @@ export function TransactionForm() {
       tags: [],
     },
   });
+
+  const watchType = form.watch("type");
+  const watchAccountId = form.watch("accountId");
+  const watchAmount = form.watch("amount");
+
+  // Filter goals to those on the same account
+  const eligibleGoals = goals.filter(
+    (g) => !g.archived && (!watchAccountId || g.accountId === watchAccountId)
+  );
 
   useEffect(() => {
     if (isOpen && isEdit && editId) {
@@ -65,6 +81,9 @@ export function TransactionForm() {
           });
         }
       });
+      setApplyToGoal(false);
+      setSelectedGoalId("");
+      setGoalAmount(0);
     } else if (isOpen && !isEdit) {
       form.reset({
         date: new Date(),
@@ -75,8 +94,18 @@ export function TransactionForm() {
         note: "",
         tags: [],
       });
+      setApplyToGoal(false);
+      setSelectedGoalId("");
+      setGoalAmount(0);
     }
   }, [isOpen, isEdit, editId, accounts, form]);
+
+  // Update goal amount when transaction amount changes
+  useEffect(() => {
+    if (applyToGoal && watchAmount > 0) {
+      setGoalAmount(watchAmount);
+    }
+  }, [watchAmount, applyToGoal]);
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
@@ -87,13 +116,32 @@ export function TransactionForm() {
         });
         toast.success("Transaction updated");
       } else {
+        const txId = crypto.randomUUID();
         await db.transactions.add({
-          id: crypto.randomUUID(),
+          id: txId,
           ...data,
           tags: data.tags || [],
           createdAt: new Date(),
           updatedAt: new Date(),
         });
+
+        // Create GoalSpendLink if applicable
+        if (
+          applyToGoal &&
+          selectedGoalId &&
+          goalAmount > 0 &&
+          data.type === "expense"
+        ) {
+          await db.goalSpendLinks.add({
+            id: crypto.randomUUID(),
+            goalId: selectedGoalId,
+            transactionId: txId,
+            amountApplied: goalAmount,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+
         toast.success("Transaction added");
       }
       closeModal();
@@ -204,6 +252,55 @@ export function TransactionForm() {
               {...form.register("note")}
             />
           </div>
+
+          {/* Apply to goal section — only for new expense transactions */}
+          {!isEdit && watchType === "expense" && eligibleGoals.length > 0 && (
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="applyToGoal" className="text-sm cursor-pointer">
+                  Apply to goal
+                </Label>
+                <Switch
+                  id="applyToGoal"
+                  checked={applyToGoal}
+                  onCheckedChange={setApplyToGoal}
+                />
+              </div>
+              {applyToGoal && (
+                <div className="space-y-3 pl-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="goalSelect" className="text-xs">Goal</Label>
+                    <Select
+                      value={selectedGoalId}
+                      onValueChange={setSelectedGoalId}
+                    >
+                      <SelectTrigger id="goalSelect">
+                        <SelectValue placeholder="Select goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eligibleGoals.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            {g.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="goalAmt" className="text-xs">Amount to apply</Label>
+                    <Input
+                      id="goalAmt"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={goalAmount}
+                      onChange={(e) => setGoalAmount(parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={closeModal}>

@@ -5,9 +5,8 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ArrowLeftRight,
-  RefreshCw,
+  Target,
   TrendingUp,
-  Wallet,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,9 +15,8 @@ import { useUIStore } from "@/lib/stores/ui.store";
 const navItems = [
   { label: "Home", href: "/", icon: LayoutDashboard },
   { label: "Transactions", href: "/transactions", icon: ArrowLeftRight },
-  { label: "Subscriptions", href: "/subscriptions", icon: RefreshCw },
+  { label: "Goals", href: "/goals", icon: Target },
   { label: "Income", href: "/income", icon: TrendingUp },
-  { label: "Accounts", href: "/accounts", icon: Wallet },
 ];
 
 export function MobileNav() {

@@ -57,3 +57,33 @@ export interface IncomeEntry {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Goal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  targetDate?: string; // YYYY-MM-DD
+  accountId: string; // must reference a main account
+  archived: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GoalAllocation {
+  id: string;
+  goalId: string;
+  date: string; // YYYY-MM-DD
+  amount: number; // positive
+  note?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GoalSpendLink {
+  id: string;
+  goalId: string;
+  transactionId: string;
+  amountApplied: number; // positive
+  createdAt: Date;
+  updatedAt: Date;
+}
