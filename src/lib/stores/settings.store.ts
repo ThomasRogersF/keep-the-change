@@ -11,6 +11,9 @@ interface SettingsState {
 
   selectedMonth: string;
   setSelectedMonth: (m: string) => void;
+
+  subtractGoalsFromAvailable: boolean;
+  setSubtractGoalsFromAvailable: (v: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -23,12 +26,17 @@ export const useSettingsStore = create<SettingsState>()(
 
       selectedMonth: format(new Date(), "yyyy-MM"),
       setSelectedMonth: (selectedMonth) => set({ selectedMonth }),
+
+      subtractGoalsFromAvailable: false,
+      setSubtractGoalsFromAvailable: (subtractGoalsFromAvailable) =>
+        set({ subtractGoalsFromAvailable }),
     }),
     {
       name: "ledgerly-settings",
       partialize: (state) => ({
         currency: state.currency,
         currencyLocale: state.currencyLocale,
+        subtractGoalsFromAvailable: state.subtractGoalsFromAvailable,
       }),
     }
   )

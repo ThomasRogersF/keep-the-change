@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/lib/auth/use-auth";
 import {
   LayoutDashboard,
   ArrowLeftRight,
   RefreshCw,
   TrendingUp,
   Wallet,
+  Target,
   Settings,
   Sun,
   Moon,
   BookOpen,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,13 +25,21 @@ const navItems = [
   { label: "Transactions", href: "/transactions", icon: ArrowLeftRight },
   { label: "Subscriptions", href: "/subscriptions", icon: RefreshCw },
   { label: "Income", href: "/income", icon: TrendingUp },
+  { label: "Goals", href: "/goals", icon: Target },
   { label: "Accounts", href: "/accounts", icon: Wallet },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace("/login");
+  };
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 border-r border-sidebar-border bg-sidebar-background">
@@ -67,8 +78,18 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Theme toggle */}
-      <div className="px-3 py-4 border-t border-sidebar-border">
+      {/* User section + Theme toggle */}
+      <div className="px-3 py-4 border-t border-sidebar-border space-y-2">
+        {user && (
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0">
+              {user.email?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <span className="text-xs text-sidebar-foreground truncate flex-1">
+              {user.email}
+            </span>
+          </div>
+        )}
         <Button
           variant="ghost"
           size="sm"
@@ -78,6 +99,15 @@ export function Sidebar() {
           <Sun className="w-4 h-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
           <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+          className="w-full justify-start gap-3 text-sidebar-foreground hover:text-foreground"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign out</span>
         </Button>
       </div>
     </aside>

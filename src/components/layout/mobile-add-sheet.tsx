@@ -6,6 +6,7 @@ import {
   RefreshCw,
   TrendingUp,
   Wallet,
+  Target,
 } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -29,6 +30,12 @@ const actions = [
     icon: TrendingUp,
     modalType: "income" as const,
     href: "/income",
+  },
+  {
+    label: "Add Goal",
+    icon: Target,
+    modalType: "goal" as const,
+    href: "/goals",
   },
   {
     label: "Add Account",

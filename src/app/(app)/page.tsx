@@ -7,6 +7,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart";
 import { CategoryBreakdownChart } from "@/components/dashboard/category-breakdown-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
+import { GoalsWidget } from "@/components/dashboard/goals-widget";
 import { useDashboard } from "@/lib/hooks/use-dashboard";
 import { useSettingsStore } from "@/lib/stores/settings.store";
 import { useCurrencyFormatter } from "@/lib/hooks/use-currency";
@@ -51,6 +52,9 @@ export default function DashboardPage() {
           icon={RefreshCw}
         />
       </div>
+
+      {/* Goals widget */}
+      <GoalsWidget />
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -1,5 +1,5 @@
 import { db } from "./database";
-import { format, subMonths, subDays, addDays } from "date-fns";
+import { format, subMonths, subDays, addDays, addMonths } from "date-fns";
 import { DEFAULT_CATEGORIES } from "@/lib/utils/constants";
 
 export async function loadDemoData() {
@@ -156,6 +156,22 @@ export async function loadDemoData() {
     });
   });
 
+  // Track a specific Amazon purchase for goal-linking
+  const laptopPurchaseTxId = crypto.randomUUID();
+  txs.push({
+    id: laptopPurchaseTxId,
+    date: subDays(now, 3),
+    amount: 89.99,
+    type: "expense",
+    categoryId: categoryIds["Shopping"],
+    merchantId: merchantIds["Amazon"],
+    accountId: checkingId,
+    note: "Laptop accessories (linked to goal)",
+    tags: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
   await db.transactions.bulkAdd(txs);
 
   // Create subscriptions
@@ -228,6 +244,143 @@ export async function loadDemoData() {
       updatedAt: new Date(),
     }))
   );
+
+  // ─── Goals ─────────────────────────────────────────────
+  const laptopGoalId = crypto.randomUUID();
+  const emergencyGoalId = crypto.randomUUID();
+  const vacationGoalId = crypto.randomUUID();
+
+  await db.goals.bulkAdd([
+    {
+      id: laptopGoalId,
+      name: "New Laptop",
+      targetAmount: 1500,
+      targetDate: format(addMonths(now, 3), "yyyy-MM-dd"),
+      accountId: checkingId,
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: emergencyGoalId,
+      name: "Emergency Fund",
+      targetAmount: 5000,
+      accountId: checkingId,
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: vacationGoalId,
+      name: "Vacation",
+      targetAmount: 3000,
+      targetDate: format(addMonths(now, 6), "yyyy-MM-dd"),
+      accountId: checkingId,
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
+
+  // Goal allocations
+  await db.goalAllocations.bulkAdd([
+    // New Laptop allocations (~$800)
+    {
+      id: crypto.randomUUID(),
+      goalId: laptopGoalId,
+      date: format(subDays(now, 60), "yyyy-MM-dd"),
+      amount: 200,
+      note: "Initial savings",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: laptopGoalId,
+      date: format(subDays(now, 30), "yyyy-MM-dd"),
+      amount: 250,
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: laptopGoalId,
+      date: format(subDays(now, 5), "yyyy-MM-dd"),
+      amount: 350,
+      note: "Bonus allocation",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    // Emergency Fund allocations (~$2200)
+    {
+      id: crypto.randomUUID(),
+      goalId: emergencyGoalId,
+      date: format(subDays(now, 90), "yyyy-MM-dd"),
+      amount: 500,
+      note: "Starting emergency fund",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: emergencyGoalId,
+      date: format(subDays(now, 60), "yyyy-MM-dd"),
+      amount: 500,
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: emergencyGoalId,
+      date: format(subDays(now, 30), "yyyy-MM-dd"),
+      amount: 600,
+      note: "Extra from freelance",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: emergencyGoalId,
+      date: format(subDays(now, 3), "yyyy-MM-dd"),
+      amount: 600,
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    // Vacation allocations (~$600)
+    {
+      id: crypto.randomUUID(),
+      goalId: vacationGoalId,
+      date: format(subDays(now, 45), "yyyy-MM-dd"),
+      amount: 300,
+      note: "Trip planning savings",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      goalId: vacationGoalId,
+      date: format(subDays(now, 10), "yyyy-MM-dd"),
+      amount: 300,
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
+
+  // One GoalSpendLink: link the Amazon laptop accessory purchase to "New Laptop" goal
+  await db.goalSpendLinks.bulkAdd([
+    {
+      id: crypto.randomUUID(),
+      goalId: laptopGoalId,
+      transactionId: laptopPurchaseTxId,
+      amountApplied: 89.99,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ]);
 }
 
 export async function clearAllData() {
@@ -237,11 +390,14 @@ export async function clearAllData() {
   await db.merchants.clear();
   await db.categories.clear();
   await db.accounts.clear();
+  await db.goals.clear();
+  await db.goalAllocations.clear();
+  await db.goalSpendLinks.clear();
 }
 
 export async function exportAllData() {
   const data = {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     accounts: await db.accounts.toArray(),
     categories: await db.categories.toArray(),
@@ -249,6 +405,9 @@ export async function exportAllData() {
     transactions: await db.transactions.toArray(),
     subscriptions: await db.subscriptions.toArray(),
     incomeEntries: await db.incomeEntries.toArray(),
+    goals: await db.goals.toArray(),
+    goalAllocations: await db.goalAllocations.toArray(),
+    goalSpendLinks: await db.goalSpendLinks.toArray(),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -303,4 +462,23 @@ export async function importData(jsonString: string) {
   await db.incomeEntries.bulkAdd(
     parseDateFields(data.incomeEntries, ["createdAt", "updatedAt"])
   );
+
+  // Import goals data (version 2+)
+  if (data.version >= 2) {
+    if (data.goals?.length) {
+      await db.goals.bulkAdd(
+        parseDateFields(data.goals, ["createdAt", "updatedAt"])
+      );
+    }
+    if (data.goalAllocations?.length) {
+      await db.goalAllocations.bulkAdd(
+        parseDateFields(data.goalAllocations, ["createdAt", "updatedAt"])
+      );
+    }
+    if (data.goalSpendLinks?.length) {
+      await db.goalSpendLinks.bulkAdd(
+        parseDateFields(data.goalSpendLinks, ["createdAt", "updatedAt"])
+      );
+    }
+  }
 }

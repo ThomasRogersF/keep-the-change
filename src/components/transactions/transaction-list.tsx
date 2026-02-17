@@ -57,6 +57,8 @@ export function TransactionList({ transactions, categories, accounts }: Transact
   );
 
   const handleDelete = async (id: string) => {
+    // Also clean up any goal spend links associated with this transaction
+    await db.goalSpendLinks.where("transactionId").equals(id).delete();
     await db.transactions.delete(id);
     toast.success("Transaction deleted");
   };
@@ -146,7 +148,7 @@ export function TransactionList({ transactions, categories, accounts }: Transact
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete transaction?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone.
+                                This will permanently delete the transaction. Any goal purchase links will also be removed. This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
