@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { AppShell } from "@/components/layout/app-shell";
 import { Toaster } from "@/components/ui/sonner";
 import { AutoSyncProvider } from "@/components/sync/auto-sync-provider";
+import { OfflineBanner } from "@/components/sync/OfflineBanner";
 import { Loader2 } from "lucide-react";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <AutoSyncProvider>
+        <OfflineBanner />
         <AppShell>
           {children}
           <Toaster position="bottom-right" richColors />

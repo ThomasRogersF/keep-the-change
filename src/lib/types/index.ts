@@ -100,20 +100,47 @@ export interface GoalSpendLink {
   deletedAt: Date | null;
 }
 
+export interface TableSyncStats {
+  pushed: number;
+  pulled: number;
+  conflictsResolved: number;
+  error?: string;
+}
+
+export interface SyncSummary {
+  startedAt: Date;
+  finishedAt: Date;
+  durationMs: number;
+  status: "ok" | "partial" | "error";
+  tables: Record<string, TableSyncStats>;
+  totalPushed: number;
+  totalPulled: number;
+}
+
 export interface SyncState {
   userId: string;
   deviceId: string;
   initialSyncCompleted: boolean;
+  /** Legacy globals — kept for backward compat / migration only */
   lastPushAt: Date | null;
   lastPullAt: Date | null;
+  /** Per-table high-water marks (ISO strings) */
+  lastPushAtByTable: Record<string, string | null>;
+  lastPullAtByTable: Record<string, string | null>;
+  /** Global display fields */
   lastSyncAt: Date | null;
-  lastSyncStatus: "idle" | "syncing" | "success" | "error";
+  lastSyncStatus: "idle" | "syncing" | "success" | "partial" | "error";
   lastSyncError: string | null;
+  lastSyncSummary: SyncSummary | null;
+  /** Backoff */
+  retryCount: number;
+  nextRetryAt: Date | null;
   syncLog: SyncLogEntry[];
 }
 
 export interface SyncLogEntry {
   timestamp: Date;
+  level: "info" | "warn" | "error";
   action: "push" | "pull" | "conflict" | "error";
   table: string;
   count: number;

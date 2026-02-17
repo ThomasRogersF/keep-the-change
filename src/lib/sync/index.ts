@@ -1,4 +1,4 @@
-export { SyncEngine } from "./sync-engine";
+export { SyncEngine, runSync, isSyncInFlight, isSyncQueued } from "./sync-engine";
 export {
   initialSyncKeepLocal,
   initialSyncUseCloud,
@@ -8,4 +8,4 @@ export {
 } from "./initial-sync";
 export { useSyncState, useSync } from "./use-sync";
 export { ALL_DESCRIPTORS } from "./table-descriptors";
-export type { SyncResult, TableDescriptor, RemoteRow } from "./types";
+export type { SyncResult, TableSyncResult, TableDescriptor, RemoteRow } from "./types";
