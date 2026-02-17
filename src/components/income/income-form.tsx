@@ -73,6 +73,7 @@ export function IncomeForm() {
           ...data,
           createdAt: new Date(),
           updatedAt: new Date(),
+          deletedAt: null,
         });
         toast.success("Income added");
       }

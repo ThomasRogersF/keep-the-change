@@ -18,6 +18,9 @@ export function useTransactions() {
     async () => {
       let results = await db.transactions.orderBy("date").reverse().toArray();
 
+      // Filter out soft-deleted records
+      results = results.filter((t) => !t.deletedAt);
+
       if (transactionType !== "all") {
         results = results.filter((t) => t.type === transactionType);
       }

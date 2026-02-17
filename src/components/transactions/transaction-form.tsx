@@ -123,6 +123,7 @@ export function TransactionForm() {
           tags: data.tags || [],
           createdAt: new Date(),
           updatedAt: new Date(),
+          deletedAt: null,
         });
 
         // Create GoalSpendLink if applicable
@@ -139,6 +140,7 @@ export function TransactionForm() {
             amountApplied: goalAmount,
             createdAt: new Date(),
             updatedAt: new Date(),
+            deletedAt: null,
           });
         }
 

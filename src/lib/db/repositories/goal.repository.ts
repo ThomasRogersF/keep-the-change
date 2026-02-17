@@ -8,15 +8,18 @@ class GoalRepository extends BaseRepository<Goal> {
   }
 
   async getActive(): Promise<Goal[]> {
-    return this.table.where("archived").equals(0).toArray();
+    const results = await this.table.where("archived").equals(0).toArray();
+    return results.filter((g: Goal) => !g.deletedAt);
   }
 
   async getArchived(): Promise<Goal[]> {
-    return this.table.where("archived").equals(1).toArray();
+    const results = await this.table.where("archived").equals(1).toArray();
+    return results.filter((g: Goal) => !g.deletedAt);
   }
 
   async getByAccount(accountId: string): Promise<Goal[]> {
-    return this.table.where("accountId").equals(accountId).toArray();
+    const results = await this.table.where("accountId").equals(accountId).toArray();
+    return results.filter((g: Goal) => !g.deletedAt);
   }
 
   async archive(id: string): Promise<void> {

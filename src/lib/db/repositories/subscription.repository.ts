@@ -8,14 +8,15 @@ class SubscriptionRepository extends BaseRepository<Subscription> {
   }
 
   async getActive(): Promise<Subscription[]> {
-    return this.table.where("active").equals(1).toArray();
+    const results = await this.table.where("active").equals(1).toArray();
+    return results.filter((s: Subscription) => !s.deletedAt);
   }
 
   async getUpcoming(from: Date, to: Date): Promise<Subscription[]> {
     return this.table
       .where("nextRenewalDate")
       .between(from, to, true, true)
-      .filter((s: Subscription) => s.active)
+      .filter((s: Subscription) => !s.deletedAt && s.active)
       .sortBy("nextRenewalDate");
   }
 

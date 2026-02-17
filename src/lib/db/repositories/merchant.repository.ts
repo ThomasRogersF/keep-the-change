@@ -8,7 +8,9 @@ class MerchantRepository extends BaseRepository<Merchant> {
   }
 
   async getByName(name: string): Promise<Merchant | undefined> {
-    return this.table.where("name").equals(name).first();
+    const result = await this.table.where("name").equals(name).first();
+    if (result && result.deletedAt) return undefined;
+    return result;
   }
 
   async getOrCreate(name: string): Promise<string> {

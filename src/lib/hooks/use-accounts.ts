@@ -4,12 +4,22 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/database";
 
 export function useAccounts() {
-  return useLiveQuery(() => db.accounts.toArray(), [], []);
+  return useLiveQuery(
+    async () => {
+      const all = await db.accounts.toArray();
+      return all.filter((a) => !a.deletedAt);
+    },
+    [],
+    []
+  );
 }
 
 export function useMainAccounts() {
   return useLiveQuery(
-    () => db.accounts.where("type").equals("main").toArray(),
+    async () => {
+      const results = await db.accounts.where("type").equals("main").toArray();
+      return results.filter((a) => !a.deletedAt);
+    },
     [],
     []
   );
@@ -17,7 +27,10 @@ export function useMainAccounts() {
 
 export function useExternalAccounts() {
   return useLiveQuery(
-    () => db.accounts.where("type").equals("external").toArray(),
+    async () => {
+      const results = await db.accounts.where("type").equals("external").toArray();
+      return results.filter((a) => !a.deletedAt);
+    },
     [],
     []
   );

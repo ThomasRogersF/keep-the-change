@@ -8,7 +8,8 @@ class IncomeRepository extends BaseRepository<IncomeEntry> {
   }
 
   async getByMonth(month: string): Promise<IncomeEntry[]> {
-    return this.table.where("month").equals(month).toArray();
+    const results = await this.table.where("month").equals(month).toArray();
+    return results.filter((e: IncomeEntry) => !e.deletedAt);
   }
 
   async getTotalForMonth(month: string): Promise<number> {

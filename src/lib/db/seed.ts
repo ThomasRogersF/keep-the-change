@@ -23,6 +23,8 @@ export async function loadDemoData() {
       type: "main",
       currency: "USD",
       createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     },
     {
       id: creditCardId,
@@ -30,6 +32,8 @@ export async function loadDemoData() {
       type: "main",
       currency: "USD",
       createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     },
     {
       id: investmentId,
@@ -37,6 +41,8 @@ export async function loadDemoData() {
       type: "external",
       currency: "USD",
       createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     },
   ]);
 
@@ -51,6 +57,8 @@ export async function loadDemoData() {
       icon: cat.icon,
       colorToken: cat.colorToken,
       createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
   });
   await db.categories.bulkAdd(categoryRecords);
@@ -72,7 +80,7 @@ export async function loadDemoData() {
   const merchantRecords = merchantNames.map((name) => {
     const id = crypto.randomUUID();
     merchantIds[name] = id;
-    return { id, name, createdAt: new Date() };
+    return { id, name, createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
   });
   await db.merchants.bulkAdd(merchantRecords);
 
@@ -89,6 +97,7 @@ export async function loadDemoData() {
     tags: string[];
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: null;
   }> = [];
 
   const expenses = [
@@ -117,6 +126,7 @@ export async function loadDemoData() {
         tags: [],
         createdAt: new Date(),
         updatedAt: new Date(),
+        deletedAt: null,
       });
       dayOffset += Math.floor(Math.random() * 3) + 1;
     }
@@ -136,6 +146,7 @@ export async function loadDemoData() {
       tags: ["rent", "recurring"],
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     });
   }
 
@@ -153,6 +164,7 @@ export async function loadDemoData() {
       tags: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     });
   });
 
@@ -170,6 +182,7 @@ export async function loadDemoData() {
     tags: [],
     createdAt: new Date(),
     updatedAt: new Date(),
+    deletedAt: null,
   });
 
   await db.transactions.bulkAdd(txs);
@@ -223,6 +236,7 @@ export async function loadDemoData() {
       active: true,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     }))
   );
 
@@ -242,6 +256,7 @@ export async function loadDemoData() {
       ...inc,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     }))
   );
 
@@ -260,6 +275,7 @@ export async function loadDemoData() {
       archived: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     },
     {
       id: emergencyGoalId,
@@ -269,6 +285,7 @@ export async function loadDemoData() {
       archived: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     },
     {
       id: vacationGoalId,
@@ -279,95 +296,21 @@ export async function loadDemoData() {
       archived: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     },
   ]);
 
   // Goal allocations
   await db.goalAllocations.bulkAdd([
-    // New Laptop allocations (~$800)
-    {
-      id: crypto.randomUUID(),
-      goalId: laptopGoalId,
-      date: format(subDays(now, 60), "yyyy-MM-dd"),
-      amount: 200,
-      note: "Initial savings",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: laptopGoalId,
-      date: format(subDays(now, 30), "yyyy-MM-dd"),
-      amount: 250,
-      note: "Monthly contribution",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: laptopGoalId,
-      date: format(subDays(now, 5), "yyyy-MM-dd"),
-      amount: 350,
-      note: "Bonus allocation",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    // Emergency Fund allocations (~$2200)
-    {
-      id: crypto.randomUUID(),
-      goalId: emergencyGoalId,
-      date: format(subDays(now, 90), "yyyy-MM-dd"),
-      amount: 500,
-      note: "Starting emergency fund",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: emergencyGoalId,
-      date: format(subDays(now, 60), "yyyy-MM-dd"),
-      amount: 500,
-      note: "Monthly contribution",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: emergencyGoalId,
-      date: format(subDays(now, 30), "yyyy-MM-dd"),
-      amount: 600,
-      note: "Extra from freelance",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: emergencyGoalId,
-      date: format(subDays(now, 3), "yyyy-MM-dd"),
-      amount: 600,
-      note: "Monthly contribution",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    // Vacation allocations (~$600)
-    {
-      id: crypto.randomUUID(),
-      goalId: vacationGoalId,
-      date: format(subDays(now, 45), "yyyy-MM-dd"),
-      amount: 300,
-      note: "Trip planning savings",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: crypto.randomUUID(),
-      goalId: vacationGoalId,
-      date: format(subDays(now, 10), "yyyy-MM-dd"),
-      amount: 300,
-      note: "Monthly contribution",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
+    { id: crypto.randomUUID(), goalId: laptopGoalId, date: format(subDays(now, 60), "yyyy-MM-dd"), amount: 200, note: "Initial savings", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: laptopGoalId, date: format(subDays(now, 30), "yyyy-MM-dd"), amount: 250, note: "Monthly contribution", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: laptopGoalId, date: format(subDays(now, 5), "yyyy-MM-dd"), amount: 350, note: "Bonus allocation", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: emergencyGoalId, date: format(subDays(now, 90), "yyyy-MM-dd"), amount: 500, note: "Starting emergency fund", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: emergencyGoalId, date: format(subDays(now, 60), "yyyy-MM-dd"), amount: 500, note: "Monthly contribution", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: emergencyGoalId, date: format(subDays(now, 30), "yyyy-MM-dd"), amount: 600, note: "Extra from freelance", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: emergencyGoalId, date: format(subDays(now, 3), "yyyy-MM-dd"), amount: 600, note: "Monthly contribution", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: vacationGoalId, date: format(subDays(now, 45), "yyyy-MM-dd"), amount: 300, note: "Trip planning savings", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
+    { id: crypto.randomUUID(), goalId: vacationGoalId, date: format(subDays(now, 10), "yyyy-MM-dd"), amount: 300, note: "Monthly contribution", createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
   ]);
 
   // One GoalSpendLink: link the Amazon laptop accessory purchase to "New Laptop" goal
@@ -379,6 +322,7 @@ export async function loadDemoData() {
       amountApplied: 89.99,
       createdAt: new Date(),
       updatedAt: new Date(),
+      deletedAt: null,
     },
   ]);
 }
@@ -396,18 +340,21 @@ export async function clearAllData() {
 }
 
 export async function exportAllData() {
+  const filterActive = <T extends { deletedAt?: Date | null }>(items: T[]) =>
+    items.filter((r) => !r.deletedAt);
+
   const data = {
     version: 2,
     exportedAt: new Date().toISOString(),
-    accounts: await db.accounts.toArray(),
-    categories: await db.categories.toArray(),
-    merchants: await db.merchants.toArray(),
-    transactions: await db.transactions.toArray(),
-    subscriptions: await db.subscriptions.toArray(),
-    incomeEntries: await db.incomeEntries.toArray(),
-    goals: await db.goals.toArray(),
-    goalAllocations: await db.goalAllocations.toArray(),
-    goalSpendLinks: await db.goalSpendLinks.toArray(),
+    accounts: filterActive(await db.accounts.toArray()),
+    categories: filterActive(await db.categories.toArray()),
+    merchants: filterActive(await db.merchants.toArray()),
+    transactions: filterActive(await db.transactions.toArray()),
+    subscriptions: filterActive(await db.subscriptions.toArray()),
+    incomeEntries: filterActive(await db.incomeEntries.toArray()),
+    goals: filterActive(await db.goals.toArray()),
+    goalAllocations: filterActive(await db.goalAllocations.toArray()),
+    goalSpendLinks: filterActive(await db.goalSpendLinks.toArray()),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -421,7 +368,9 @@ export async function importData(jsonString: string) {
 
   await clearAllData();
 
-  // Restore dates from ISO strings
+  const now = new Date();
+
+  // Restore dates from ISO strings and ensure sync-compatible fields
   const parseDateFields = <T extends Record<string, unknown>>(
     items: T[],
     fields: string[]
@@ -433,17 +382,20 @@ export async function importData(jsonString: string) {
           (result as Record<string, unknown>)[field] = new Date(result[field] as string);
         }
       }
+      // Ensure sync-compatible fields exist
+      if (!result.updatedAt) (result as Record<string, unknown>).updatedAt = now;
+      if (result.deletedAt === undefined) (result as Record<string, unknown>).deletedAt = null;
       return result;
     });
 
   await db.accounts.bulkAdd(
-    parseDateFields(data.accounts, ["createdAt"])
+    parseDateFields(data.accounts, ["createdAt", "updatedAt"])
   );
   await db.categories.bulkAdd(
-    parseDateFields(data.categories, ["createdAt"])
+    parseDateFields(data.categories, ["createdAt", "updatedAt"])
   );
   await db.merchants.bulkAdd(
-    parseDateFields(data.merchants, ["createdAt"])
+    parseDateFields(data.merchants, ["createdAt", "updatedAt"])
   );
   await db.transactions.bulkAdd(
     parseDateFields(data.transactions, [
@@ -480,5 +432,15 @@ export async function importData(jsonString: string) {
         parseDateFields(data.goalSpendLinks, ["createdAt", "updatedAt"])
       );
     }
+  }
+
+  // Bump updatedAt on all imported records so they push on next sync
+  const allTables = [
+    "accounts", "categories", "merchants",
+    "transactions", "subscriptions", "incomeEntries",
+    "goals", "goalAllocations", "goalSpendLinks",
+  ] as const;
+  for (const tableName of allTables) {
+    await db.table(tableName).toCollection().modify({ updatedAt: now });
   }
 }

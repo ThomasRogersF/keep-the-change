@@ -8,7 +8,8 @@ class GoalAllocationRepository extends BaseRepository<GoalAllocation> {
   }
 
   async getByGoalId(goalId: string): Promise<GoalAllocation[]> {
-    return this.table.where("goalId").equals(goalId).reverse().sortBy("date");
+    const results = await this.table.where("goalId").equals(goalId).reverse().sortBy("date");
+    return results.filter((a: GoalAllocation) => !a.deletedAt);
   }
 
   async getSumByGoalId(goalId: string): Promise<number> {
@@ -16,11 +17,17 @@ class GoalAllocationRepository extends BaseRepository<GoalAllocation> {
       .where("goalId")
       .equals(goalId)
       .toArray();
-    return allocations.reduce((sum: number, a: GoalAllocation) => sum + a.amount, 0);
+    return allocations
+      .filter((a: GoalAllocation) => !a.deletedAt)
+      .reduce((sum: number, a: GoalAllocation) => sum + a.amount, 0);
   }
 
   async deleteByGoalId(goalId: string): Promise<void> {
-    await this.table.where("goalId").equals(goalId).delete();
+    const now = new Date();
+    await this.table
+      .where("goalId")
+      .equals(goalId)
+      .modify({ deletedAt: now, updatedAt: now });
   }
 }
 

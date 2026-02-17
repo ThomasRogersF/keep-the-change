@@ -19,7 +19,7 @@ export interface GoalProgress {
 
 export async function getGoalProgress(goalId: string): Promise<GoalProgress> {
   const goal = await db.goals.get(goalId);
-  if (!goal) {
+  if (!goal || goal.deletedAt) {
     return { allocated: 0, spent: 0, saved: 0, remaining: 0, percent: 0, isOverfunded: false };
   }
 
@@ -41,7 +41,7 @@ export interface GoalsSummary {
 }
 
 export async function getGoalsSummary(): Promise<GoalsSummary> {
-  const goals = await db.goals.filter((g) => !g.archived).toArray();
+  const goals = await db.goals.filter((g) => !g.archived && !g.deletedAt).toArray();
   let totalSaved = 0;
   let totalTarget = 0;
 
@@ -61,7 +61,8 @@ export async function getGoalsSummary(): Promise<GoalsSummary> {
 }
 
 export async function deleteGoalCascade(goalId: string): Promise<void> {
+  const now = new Date();
   await goalAllocationRepository.deleteByGoalId(goalId);
   await goalSpendLinkRepository.deleteByGoalId(goalId);
-  await db.goals.delete(goalId);
+  await db.goals.update(goalId, { deletedAt: now, updatedAt: now });
 }

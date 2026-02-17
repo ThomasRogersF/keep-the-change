@@ -96,6 +96,7 @@ export function SpendLinkForm({ goalId, open, onOpenChange }: SpendLinkFormProps
         amountApplied,
         createdAt: new Date(),
         updatedAt: new Date(),
+        deletedAt: null,
       });
       toast.success("Purchase linked to goal");
       onOpenChange(false);

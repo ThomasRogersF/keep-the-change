@@ -14,6 +14,12 @@ interface SettingsState {
 
   subtractGoalsFromAvailable: boolean;
   setSubtractGoalsFromAvailable: (v: boolean) => void;
+
+  syncEnabled: boolean;
+  setSyncEnabled: (v: boolean) => void;
+
+  autoSyncEnabled: boolean;
+  setAutoSyncEnabled: (v: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -30,6 +36,12 @@ export const useSettingsStore = create<SettingsState>()(
       subtractGoalsFromAvailable: false,
       setSubtractGoalsFromAvailable: (subtractGoalsFromAvailable) =>
         set({ subtractGoalsFromAvailable }),
+
+      syncEnabled: false,
+      setSyncEnabled: (syncEnabled) => set({ syncEnabled }),
+
+      autoSyncEnabled: true,
+      setAutoSyncEnabled: (autoSyncEnabled) => set({ autoSyncEnabled }),
     }),
     {
       name: "ledgerly-settings",
@@ -37,6 +49,8 @@ export const useSettingsStore = create<SettingsState>()(
         currency: state.currency,
         currencyLocale: state.currencyLocale,
         subtractGoalsFromAvailable: state.subtractGoalsFromAvailable,
+        syncEnabled: state.syncEnabled,
+        autoSyncEnabled: state.autoSyncEnabled,
       }),
     }
   )

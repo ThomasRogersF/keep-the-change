@@ -8,14 +8,16 @@ class GoalSpendLinkRepository extends BaseRepository<GoalSpendLink> {
   }
 
   async getByGoalId(goalId: string): Promise<GoalSpendLink[]> {
-    return this.table.where("goalId").equals(goalId).toArray();
+    const results = await this.table.where("goalId").equals(goalId).toArray();
+    return results.filter((l: GoalSpendLink) => !l.deletedAt);
   }
 
   async getByTransactionId(transactionId: string): Promise<GoalSpendLink[]> {
-    return this.table
+    const results = await this.table
       .where("transactionId")
       .equals(transactionId)
       .toArray();
+    return results.filter((l: GoalSpendLink) => !l.deletedAt);
   }
 
   async getSumByGoalId(goalId: string): Promise<number> {
@@ -23,15 +25,25 @@ class GoalSpendLinkRepository extends BaseRepository<GoalSpendLink> {
       .where("goalId")
       .equals(goalId)
       .toArray();
-    return links.reduce((sum: number, l: GoalSpendLink) => sum + l.amountApplied, 0);
+    return links
+      .filter((l: GoalSpendLink) => !l.deletedAt)
+      .reduce((sum: number, l: GoalSpendLink) => sum + l.amountApplied, 0);
   }
 
   async deleteByGoalId(goalId: string): Promise<void> {
-    await this.table.where("goalId").equals(goalId).delete();
+    const now = new Date();
+    await this.table
+      .where("goalId")
+      .equals(goalId)
+      .modify({ deletedAt: now, updatedAt: now });
   }
 
   async deleteByTransactionId(transactionId: string): Promise<void> {
-    await this.table.where("transactionId").equals(transactionId).delete();
+    const now = new Date();
+    await this.table
+      .where("transactionId")
+      .equals(transactionId)
+      .modify({ deletedAt: now, updatedAt: now });
   }
 }
 

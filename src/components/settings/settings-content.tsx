@@ -6,7 +6,7 @@ import { useSettingsStore } from "@/lib/stores/settings.store";
 import { CURRENCIES } from "@/lib/utils/constants";
 import { loadDemoData, clearAllData, exportAllData, importData } from "@/lib/db/seed";
 import { toast } from "sonner";
-import { Sun, Moon, Monitor, Download, Upload, Database, Trash2, Target } from "lucide-react";
+import { Sun, Moon, Monitor, Download, Upload, Database, Trash2, Target, Cloud, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -30,11 +30,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/use-auth";
+import { useSyncState } from "@/lib/sync/use-sync";
+import { SyncEngine } from "@/lib/sync/sync-engine";
+import { SyncStatusBadge } from "@/components/sync/sync-status-badge";
+import { InitialSyncWizard } from "@/components/sync/initial-sync-wizard";
+import { db } from "@/lib/db/database";
 
 export function SettingsContent() {
   const { theme, setTheme } = useTheme();
-  const { currency, setCurrency, subtractGoalsFromAvailable, setSubtractGoalsFromAvailable } = useSettingsStore();
+  const { user } = useAuth();
+  const { currency, setCurrency, subtractGoalsFromAvailable, setSubtractGoalsFromAvailable, syncEnabled, setSyncEnabled, autoSyncEnabled, setAutoSyncEnabled } = useSettingsStore();
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const syncState = useSyncState();
 
   const handleExport = async () => {
     try {
@@ -88,6 +98,42 @@ export function SettingsContent() {
       toast.success("All data cleared");
     } catch {
       toast.error("Failed to clear data");
+    }
+  };
+
+  const handleToggleSync = (enabled: boolean) => {
+    setSyncEnabled(enabled);
+    if (enabled && user && !syncState?.initialSyncCompleted) {
+      setWizardOpen(true);
+    }
+  };
+
+  const handleSyncNow = async () => {
+    if (!user || syncing) return;
+    setSyncing(true);
+    try {
+      const engine = new SyncEngine(user.id);
+      const result = await engine.sync();
+      if (result.errors.length > 0) {
+        toast.error(`Sync completed with errors: ${result.errors[0]}`);
+      } else {
+        toast.success(`Synced: ${result.pushed} pushed, ${result.pulled} pulled`);
+      }
+    } catch {
+      toast.error("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleResetSync = async () => {
+    if (!user) return;
+    try {
+      await db.syncState.delete(user.id);
+      setSyncEnabled(false);
+      toast.success("Sync state reset");
+    } catch {
+      toast.error("Failed to reset sync");
     }
   };
 
@@ -185,6 +231,95 @@ export function SettingsContent() {
         </CardContent>
       </Card>
 
+      {/* Cloud Sync */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Cloud className="w-4 h-4" />
+            Cloud Sync
+          </CardTitle>
+          <CardDescription>Sync your data across devices</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="syncEnabled" className="cursor-pointer">
+                Enable cloud sync
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Keep your data in sync across all your devices
+              </p>
+            </div>
+            <Switch
+              id="syncEnabled"
+              checked={syncEnabled}
+              onCheckedChange={handleToggleSync}
+            />
+          </div>
+
+          {syncEnabled && (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="autoSync" className="cursor-pointer">
+                    Auto-sync
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically sync on app load, reconnect, and every 5 minutes
+                  </p>
+                </div>
+                <Switch
+                  id="autoSync"
+                  checked={autoSyncEnabled}
+                  onCheckedChange={setAutoSyncEnabled}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSyncNow}
+                  disabled={syncing || !syncState?.initialSyncCompleted}
+                >
+                  <RefreshCw className={cn("w-4 h-4 mr-2", syncing && "animate-spin")} />
+                  {syncing ? "Syncing..." : "Sync Now"}
+                </Button>
+                <SyncStatusBadge
+                  status={syncState?.lastSyncStatus ?? "idle"}
+                  lastSyncAt={syncState?.lastSyncAt ?? null}
+                  error={syncState?.lastSyncError}
+                />
+              </div>
+
+              <div className="pt-2 border-t">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      Reset Sync
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset sync state?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will clear your sync metadata and disable sync. Your local and cloud data will not be deleted. You can re-enable sync at any time.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleResetSync}>
+                        Reset Sync
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Data */}
       <Card>
         <CardHeader>
@@ -232,6 +367,8 @@ export function SettingsContent() {
           </div>
         </CardContent>
       </Card>
+
+      <InitialSyncWizard open={wizardOpen} onClose={() => setWizardOpen(false)} />
     </div>
   );
 }

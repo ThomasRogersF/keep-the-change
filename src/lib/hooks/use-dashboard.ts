@@ -55,17 +55,17 @@ export function useDashboard(month: string) {
       const endOfMonth = new Date(year, mon, 0, 23, 59, 59);
 
       // Get main account IDs
-      const mainAccounts = await db.accounts
+      const mainAccounts = (await db.accounts
         .where("type")
         .equals("main")
-        .toArray();
+        .toArray()).filter((a) => !a.deletedAt);
       const mainAccountIds = new Set(mainAccounts.map((a) => a.id));
 
       // Expenses from main accounts this month
-      const allTxThisMonth = await db.transactions
+      const allTxThisMonth = (await db.transactions
         .where("date")
         .between(startOfMonth, endOfMonth, true, true)
-        .toArray();
+        .toArray()).filter((t) => !t.deletedAt);
 
       const mainExpenses = allTxThisMonth.filter(
         (t) => t.type === "expense" && mainAccountIds.has(t.accountId)
@@ -76,10 +76,10 @@ export function useDashboard(month: string) {
       );
 
       // Income from IncomeEntry
-      const incomeEntries = await db.incomeEntries
+      const incomeEntries = (await db.incomeEntries
         .where("month")
         .equals(month)
-        .toArray();
+        .toArray()).filter((e) => !e.deletedAt);
       const totalIncome = incomeEntries.reduce(
         (sum, e) => sum + e.amount,
         0
@@ -90,7 +90,7 @@ export function useDashboard(month: string) {
       const thirtyDaysFromNow = new Date(
         now.getTime() + 30 * 24 * 60 * 60 * 1000
       );
-      const allSubs = await db.subscriptions.toArray();
+      const allSubs = (await db.subscriptions.toArray()).filter((s) => !s.deletedAt);
       const upcomingSubscriptions = allSubs
         .filter(
           (s) =>
@@ -110,7 +110,7 @@ export function useDashboard(month: string) {
         }));
 
       // Category breakdown
-      const categories = await db.categories.toArray();
+      const categories = (await db.categories.toArray()).filter((c) => !c.deletedAt);
       const categoryMap = new Map(categories.map((c) => [c.id, c]));
       const catTotals = new Map<string, number>();
       for (const exp of mainExpenses) {
@@ -134,10 +134,10 @@ export function useDashboard(month: string) {
         .sort((a, b) => b.total - a.total);
 
       // Recent transactions (last 5 from main accounts)
-      const allTx = await db.transactions
+      const allTx = (await db.transactions
         .orderBy("date")
         .reverse()
-        .toArray();
+        .toArray()).filter((t) => !t.deletedAt);
       const recentTransactions = allTx
         .filter((t) => mainAccountIds.has(t.accountId))
         .slice(0, 5)
@@ -159,10 +159,10 @@ export function useDashboard(month: string) {
         const mStart = new Date(d.getFullYear(), d.getMonth(), 1);
         const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
 
-        const txInMonth = await db.transactions
+        const txInMonth = (await db.transactions
           .where("date")
           .between(mStart, mEnd, true, true)
-          .toArray();
+          .toArray()).filter((t) => !t.deletedAt);
 
         const expenses = txInMonth
           .filter(
@@ -170,10 +170,10 @@ export function useDashboard(month: string) {
           )
           .reduce((s, t) => s + t.amount, 0);
 
-        const incEntries = await db.incomeEntries
+        const incEntries = (await db.incomeEntries
           .where("month")
           .equals(m)
-          .toArray();
+          .toArray()).filter((e) => !e.deletedAt);
         const income = incEntries.reduce((s, e) => s + e.amount, 0);
 
         monthlyTrend.push({

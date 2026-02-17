@@ -96,6 +96,7 @@ export function GoalForm() {
           ...goalData,
           createdAt: new Date(),
           updatedAt: new Date(),
+          deletedAt: null,
         });
         toast.success("Goal created");
       }
