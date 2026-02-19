@@ -78,6 +78,9 @@ export function useSync() {
     try {
       const result = await runSync(user.id);
 
+      // Blocked by another tab — not an error, don't apply backoff
+      if (result.blocked) return;
+
       if (result.errors.length === 0) {
         // Clear backoff on success
         await db.syncState.update(user.id, {

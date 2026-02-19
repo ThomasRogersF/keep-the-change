@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
-import { Copy, Download, Search, FileText } from "lucide-react";
+import { Copy, Download, Search, FileText, Activity } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -17,13 +17,18 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { SyncLogEntry } from "@/lib/types";
+import {
+  runSyncDiagnostics,
+  exportDiagnosticsJson,
+} from "@/lib/sync/sync-diagnostics";
 
-type FilterLevel = "all" | "errors" | "warnings";
+type FilterLevel = "all" | "errors" | "warnings" | "conflicts";
 
 interface SyncLogViewerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   log: SyncLogEntry[];
+  userId?: string;
 }
 
 function levelBadgeClass(level: SyncLogEntry["level"]): string {
@@ -47,6 +52,8 @@ function actionLabel(action: SyncLogEntry["action"]): string {
       return "⚡ conflict";
     case "error":
       return "✕ error";
+    case "blocked":
+      return "⊘ blocked";
   }
 }
 
@@ -54,9 +61,11 @@ export function SyncLogViewerDialog({
   open,
   onOpenChange,
   log,
+  userId,
 }: SyncLogViewerDialogProps) {
   const [filter, setFilter] = useState<FilterLevel>("all");
   const [search, setSearch] = useState("");
+  const [diagRunning, setDiagRunning] = useState(false);
 
   // Newest first
   const reversedLog = useMemo(() => [...log].reverse(), [log]);
@@ -65,6 +74,7 @@ export function SyncLogViewerDialog({
     return reversedLog.filter((entry) => {
       if (filter === "errors" && entry.level !== "error") return false;
       if (filter === "warnings" && entry.level !== "warn") return false;
+      if (filter === "conflicts" && entry.action !== "conflict") return false;
 
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -103,10 +113,35 @@ export function SyncLogViewerDialog({
     toast.success("Log exported");
   };
 
+  const handleDiagnostics = async () => {
+    if (!userId) {
+      toast.error("Not signed in");
+      return;
+    }
+    setDiagRunning(true);
+    try {
+      const diag = await runSyncDiagnostics(userId);
+      const text = exportDiagnosticsJson(diag);
+      const blob = new Blob([text], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ledgerly-sync-diagnostics-${format(new Date(), "yyyy-MM-dd")}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Diagnostics exported");
+    } catch {
+      toast.error("Failed to run diagnostics");
+    } finally {
+      setDiagRunning(false);
+    }
+  };
+
   const filterOptions: { label: string; value: FilterLevel }[] = [
     { label: "All", value: "all" },
     { label: "Errors", value: "errors" },
     { label: "Warnings", value: "warnings" },
+    { label: "Conflicts", value: "conflicts" },
   ];
 
   return (
@@ -221,6 +256,17 @@ export function SyncLogViewerDialog({
             and attach it to your bug report.
           </p>
           <div className="flex items-center gap-2">
+            {userId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDiagnostics}
+                disabled={diagRunning}
+              >
+                <Activity className="w-3.5 h-3.5 mr-1.5" />
+                {diagRunning ? "Running…" : "Diagnostics"}
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleCopy}>
               <Copy className="w-3.5 h-3.5 mr-1.5" />
               Copy

@@ -1,8 +1,9 @@
 import { db } from "@/lib/db/database";
 import { supabase } from "@/lib/supabase/client";
 import type { SyncState, SyncLogEntry, SyncSummary } from "@/lib/types";
-import type { SyncResult, TableSyncResult, TableDescriptor, RemoteRow } from "./types";
+import type { SyncResult, TableDescriptor, RemoteRow } from "./types";
 import { ALL_DESCRIPTORS } from "./table-descriptors";
+import { withSyncLock } from "./cross-tab-lock";
 
 const CHUNK_SIZE = 200;
 const LOG_BUFFER_SIZE = 200;
@@ -27,6 +28,7 @@ export function isSyncQueued(): boolean {
  * - If a sync IS running: marks queued=true and returns the in-flight promise
  *   (so callers get the same result without starting a second sync).
  * - When the in-flight sync finishes and queued===true: starts exactly one more.
+ * - Acquires a cross-tab lock BEFORE running — returns blocked if another tab holds it.
  */
 export async function runSync(userId: string): Promise<SyncResult> {
   if (inFlight) {
@@ -35,19 +37,55 @@ export async function runSync(userId: string): Promise<SyncResult> {
   }
 
   const execute = async (): Promise<SyncResult> => {
-    const engine = new SyncEngine(userId);
+    // Acquire cross-tab lock before running the sync engine
+    const lockResult = await withSyncLock(async () => {
+      const engine = new SyncEngine(userId);
+      return engine.sync();
+    });
+
+    if (lockResult.status === "blocked") {
+      // Not an error — another tab is syncing. Log as info.
+      const state = await db.syncState.get(userId);
+      if (state) {
+        const log = [
+          ...state.syncLog,
+          {
+            timestamp: new Date(),
+            level: "info" as const,
+            action: "blocked" as const,
+            table: "sync",
+            count: 0,
+            message: "Sync blocked: another tab is syncing",
+          },
+        ].slice(-LOG_BUFFER_SIZE);
+        await db.syncState.update(userId, { syncLog: log });
+      }
+      return {
+        pushed: 0,
+        pulled: 0,
+        conflicts: 0,
+        errors: [],
+        tables: {},
+        blocked: true,
+      };
+    }
+
+    return lockResult.value;
+  };
+
+  const executeWithRetry = async (): Promise<SyncResult> => {
     try {
-      return await engine.sync();
+      return await execute();
     } finally {
       inFlight = null;
       if (queued) {
         queued = false;
-        inFlight = execute();
+        inFlight = executeWithRetry();
       }
     }
   };
 
-  inFlight = execute();
+  inFlight = executeWithRetry();
   return inFlight;
 }
 
@@ -207,7 +245,7 @@ export class SyncEngine {
         const tableHWM = pullAtByTable[descriptor.name] ?? null;
         const lastPullAt = tableHWM ? new Date(tableHWM) : null;
         try {
-          const { pulled, conflicts } = await this.pullTable(
+          const { pulled, conflicts, conflictDetails } = await this.pullTable(
             descriptor,
             lastPullAt
           );
@@ -228,14 +266,8 @@ export class SyncEngine {
             });
           }
           if (conflicts > 0) {
-            log.push({
-              timestamp: new Date(),
-              level: "warn",
-              action: "conflict",
-              table: descriptor.name,
-              count: conflicts,
-              message: `${conflicts} conflict(s) resolved (remote wins)`,
-            });
+            // Per-row conflict entries for transparency
+            log.push(...conflictDetails);
           }
         } catch (err) {
           const msg = `Pull ${descriptor.name}: ${
@@ -328,8 +360,8 @@ export class SyncEngine {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async pushTable(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor: TableDescriptor<any>,
     lastPushAt: Date | null
   ): Promise<number> {
@@ -366,11 +398,15 @@ export class SyncEngine {
     return pushed;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async pullTable(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor: TableDescriptor<any>,
     lastPullAt: Date | null
-  ): Promise<{ pulled: number; conflicts: number }> {
+  ): Promise<{
+    pulled: number;
+    conflicts: number;
+    conflictDetails: SyncLogEntry[];
+  }> {
     let query = supabase
       .from(descriptor.remoteTable)
       .select("*")
@@ -402,11 +438,14 @@ export class SyncEngine {
       }
     }
 
-    if (allRemoteRows.length === 0) return { pulled: 0, conflicts: 0 };
+    if (allRemoteRows.length === 0) {
+      return { pulled: 0, conflicts: 0, conflictDetails: [] };
+    }
 
     const table = db.table(descriptor.localTable);
     let pulled = 0;
     let conflicts = 0;
+    const conflictDetails: SyncLogEntry[] = [];
 
     for (const remoteRow of allRemoteRows) {
       const localRow = descriptor.toLocal(remoteRow);
@@ -426,11 +465,19 @@ export class SyncEngine {
           await table.put(localRow);
           pulled++;
           conflicts++;
+          conflictDetails.push({
+            timestamp: new Date(),
+            level: "warn",
+            action: "conflict",
+            table: descriptor.name,
+            count: 1,
+            message: `Conflict resolved: ${descriptor.name}/${localId} remote newer \u2192 overwrote local`,
+          });
         }
         // else: local is newer or same, skip
       }
     }
 
-    return { pulled, conflicts };
+    return { pulled, conflicts, conflictDetails };
   }
 }

@@ -11,6 +11,8 @@ export interface SyncResult {
   conflicts: number;
   errors: string[];
   tables: Record<string, TableSyncResult>;
+  /** True when sync was blocked by another tab holding the cross-tab lock */
+  blocked?: boolean;
 }
 
 export type RemoteRow = Record<string, unknown>;

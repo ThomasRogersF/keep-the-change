@@ -141,7 +141,7 @@ export interface SyncState {
 export interface SyncLogEntry {
   timestamp: Date;
   level: "info" | "warn" | "error";
-  action: "push" | "pull" | "conflict" | "error";
+  action: "push" | "pull" | "conflict" | "error" | "blocked";
   table: string;
   count: number;
   message?: string;

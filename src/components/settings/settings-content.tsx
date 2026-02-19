@@ -50,6 +50,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useSyncState } from "@/lib/sync/use-sync";
+import { useSyncCountdown } from "@/lib/sync/use-sync-countdown";
 import { runSync, isSyncInFlight } from "@/lib/sync/sync-engine";
 import { InitialSyncWizard } from "@/components/sync/initial-sync-wizard";
 import { SyncLogViewerDialog } from "@/components/sync/SyncLogViewerDialog";
@@ -86,15 +87,6 @@ function isAuthError(error: string | null | undefined): boolean {
   );
 }
 
-function formatRetryAt(nextRetryAt: Date | null | undefined): string | null {
-  if (!nextRetryAt) return null;
-  const t = new Date(nextRetryAt);
-  if (t <= new Date()) return null;
-  const secs = Math.round((t.getTime() - Date.now()) / 1000);
-  if (secs < 60) return `${secs}s`;
-  return `${Math.round(secs / 60)}m`;
-}
-
 // ─── SettingsContent ──────────────────────────────────────────────────────────
 
 export function SettingsContent() {
@@ -124,8 +116,13 @@ export function SettingsContent() {
   const isSyncing =
     localSyncing || syncState?.lastSyncStatus === "syncing";
   const summary = syncState?.lastSyncSummary ?? null;
-  const retryIn = formatRetryAt(syncState?.nextRetryAt);
   const authErr = isAuthError(syncState?.lastSyncError);
+
+  // Live countdown ticker for retry backoff
+  const countdownSeconds = useSyncCountdown(
+    syncState?.nextRetryAt,
+    syncState?.lastSyncStatus
+  );
 
   // ── handlers ───────────────────────────────────────────────────────────────
 
@@ -208,6 +205,10 @@ export function SettingsContent() {
         await db.syncState.update(user.id, { nextRetryAt: null });
       }
       const result = await runSync(user.id);
+      if (result.blocked) {
+        toast.info("Another tab is syncing");
+        return;
+      }
       if (result.errors.length === 0) {
         toast.success(
           `Synced: ↑ ${result.pushed} pushed, ↓ ${result.pulled} pulled`
@@ -456,10 +457,13 @@ export function SettingsContent() {
                   </div>
                 )}
 
-                {/* Backoff retry info (non-auth errors) */}
-                {retryIn && !authErr && (
+                {/* Backoff retry info (non-auth errors) — live countdown */}
+                {countdownSeconds !== null && !authErr && (
                   <p className="text-xs text-muted-foreground">
-                    Auto-retry in {retryIn}
+                    Auto-retry in{" "}
+                    {countdownSeconds < 60
+                      ? `${countdownSeconds}s`
+                      : `${Math.floor(countdownSeconds / 60)}m ${countdownSeconds % 60}s`}
                     {syncState?.retryCount
                       ? ` (attempt ${syncState.retryCount})`
                       : ""}
@@ -647,6 +651,7 @@ export function SettingsContent() {
         open={logViewerOpen}
         onOpenChange={setLogViewerOpen}
         log={syncState?.syncLog ?? []}
+        userId={user?.id}
       />
     </div>
   );
