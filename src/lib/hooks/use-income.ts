@@ -10,7 +10,7 @@ export function useIncome(month: string) {
       return results.filter((e) => !e.deletedAt);
     },
     [month],
-    []
+    undefined
   );
 }
 

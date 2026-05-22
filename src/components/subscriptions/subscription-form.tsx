@@ -30,8 +30,8 @@ import {
 
 export function SubscriptionForm() {
   const { activeModal, closeModal } = useUIStore();
-  const accounts = useAccounts();
-  const categories = useCategories();
+  const accounts = useAccounts() ?? [];
+  const categories = useCategories() ?? [];
 
   const isOpen = activeModal?.type === "subscription";
   const isEdit = activeModal?.mode === "edit";

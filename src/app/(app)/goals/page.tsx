@@ -16,6 +16,7 @@ import { goalRepository } from "@/lib/db/repositories/goal.repository";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -62,7 +63,8 @@ export default function GoalsPage() {
     }
   };
 
-  const hasGoals = goals.length > 0 || archivedGoals.length > 0;
+  const isLoading = goals === undefined || archivedGoals === undefined;
+  const hasGoals = !isLoading && (goals.length > 0 || archivedGoals.length > 0);
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -94,7 +96,20 @@ export default function GoalsPage() {
         </Tooltip>
       </TooltipProvider>
 
-      {hasGoals ? (
+      {isLoading ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-48 w-full" />
+            ))}
+          </div>
+        </>
+      ) : hasGoals ? (
         <>
           {/* Summary strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

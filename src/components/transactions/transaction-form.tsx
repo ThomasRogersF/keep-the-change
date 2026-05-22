@@ -32,9 +32,9 @@ import {
 
 export function TransactionForm() {
   const { activeModal, closeModal } = useUIStore();
-  const accounts = useAccounts();
-  const categories = useCategories();
-  const goals = useGoals();
+  const accounts = useAccounts() ?? [];
+  const categories = useCategories() ?? [];
+  const goals = useGoals() ?? [];
 
   const isOpen = activeModal?.type === "transaction";
   const isEdit = activeModal?.mode === "edit";

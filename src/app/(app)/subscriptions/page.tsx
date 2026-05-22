@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { useSubscriptions } from "@/lib/hooks/use-subscriptions";
 import { useCategories } from "@/lib/hooks/use-categories";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SubscriptionsPage() {
   const openModal = useUIStore((s) => s.openModal);
   const subscriptions = useSubscriptions();
   const categories = useCategories();
 
-  const hasSubscriptions = subscriptions.length > 0;
+  const isLoading = subscriptions === undefined || categories === undefined;
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -30,9 +31,13 @@ export default function SubscriptionsPage() {
         }
       />
 
-      {hasSubscriptions ? (
-        <SubscriptionList subscriptions={subscriptions} categories={categories} />
-      ) : (
+      {isLoading ? (
+        <div className="space-y-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      ) : subscriptions.length === 0 ? (
         <EmptyState
           icon={RefreshCw}
           title="No subscriptions yet"
@@ -42,6 +47,8 @@ export default function SubscriptionsPage() {
             onClick: () => openModal("subscription", "create"),
           }}
         />
+      ) : (
+        <SubscriptionList subscriptions={subscriptions} categories={categories} />
       )}
 
       <SubscriptionForm />

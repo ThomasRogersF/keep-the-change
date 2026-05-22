@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { formatDistanceToNow, format } from "date-fns";
 import { useSettingsStore } from "@/lib/stores/settings.store";
 import { CURRENCIES } from "@/lib/utils/constants";
-import { loadDemoData, clearAllData, exportAllData, importData } from "@/lib/db/seed";
+import { loadDemoData, exportAllData, importData } from "@/lib/db/seed";
 import { toast } from "sonner";
 import {
   Sun,
@@ -23,6 +23,8 @@ import {
   FileText,
   AlertTriangle,
   Clock,
+  Tag,
+  Plus,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,9 +53,19 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useSyncState } from "@/lib/sync/use-sync";
 import { runSync, isSyncInFlight } from "@/lib/sync/sync-engine";
+import {
+  clearLocalAndDisableSync,
+  clearAllDataEverywhere,
+} from "@/lib/sync/clear-data";
 import { InitialSyncWizard } from "@/components/sync/initial-sync-wizard";
 import { SyncLogViewerDialog } from "@/components/sync/SyncLogViewerDialog";
 import { db } from "@/lib/db/database";
+import { useUIStore } from "@/lib/stores/ui.store";
+import { useCategories } from "@/lib/hooks/use-categories";
+import { CategoryList } from "@/components/categories/category-list";
+import { CategoryForm } from "@/components/categories/category-form";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -119,6 +131,8 @@ export function SettingsContent() {
   const [tableStatsOpen, setTableStatsOpen] = useState(false);
 
   const syncState = useSyncState();
+  const openModal = useUIStore((s) => s.openModal);
+  const categories = useCategories();
 
   // Derived state
   const isSyncing =
@@ -175,12 +189,24 @@ export function SettingsContent() {
     }
   };
 
-  const handleClearAll = async () => {
+  const handleClearLocal = async () => {
     try {
-      await clearAllData();
-      toast.success("All data cleared");
+      await clearLocalAndDisableSync(user?.id ?? null, setSyncEnabled);
+      toast.success("Local data cleared");
     } catch {
       toast.error("Failed to clear data");
+    }
+  };
+
+  const handleClearEverywhere = async () => {
+    if (!user) return;
+    try {
+      await clearAllDataEverywhere(user.id);
+      toast.success("Data cleared on this device and in the cloud");
+    } catch (err) {
+      toast.error(
+        `Failed to clear cloud data: ${err instanceof Error ? err.message : "Unknown error"}. Local data is marked for deletion — try again.`,
+      );
     }
   };
 
@@ -339,6 +365,50 @@ export function SettingsContent() {
               onCheckedChange={setSubtractGoalsFromAvailable}
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Categories */}
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              Categories
+            </CardTitle>
+            <CardDescription>
+              Organize your transactions and subscriptions
+            </CardDescription>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openModal("category", "create")}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Add
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {categories === undefined ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            <EmptyState
+              icon={Tag}
+              title="No categories yet"
+              description="Categories help you organize where your money goes."
+              action={{
+                label: "Add Category",
+                onClick: () => openModal("category", "create"),
+              }}
+            />
+          ) : (
+            <CategoryList categories={categories} />
+          )}
         </CardContent>
       </Card>
 
@@ -624,16 +694,58 @@ export function SettingsContent() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Clear all data?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete all your transactions, subscriptions, income
-                    entries, accounts, categories, merchants, and goals. This cannot be undone.
+                    {syncEnabled
+                      ? "Cloud sync is on. Choose how to clear your data:"
+                      : "This will permanently delete all your transactions, subscriptions, income entries, accounts, categories, merchants, and goals. This cannot be undone."}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearAll}>
-                    Clear Everything
-                  </AlertDialogAction>
-                </AlertDialogFooter>
+
+                {syncEnabled ? (
+                  <div className="space-y-3 py-2">
+                    <div className="rounded-lg border p-3 space-y-2">
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium">Clear this device only</p>
+                        <p className="text-xs text-muted-foreground">
+                          Disables sync and wipes local data. Your cloud copy stays intact and
+                          you can restore it by re-enabling sync.
+                        </p>
+                      </div>
+                      <AlertDialogAction
+                        onClick={handleClearLocal}
+                        className="w-full"
+                      >
+                        Clear this device
+                      </AlertDialogAction>
+                    </div>
+
+                    <div className="rounded-lg border border-destructive/30 p-3 space-y-2">
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium text-destructive">Clear everywhere</p>
+                        <p className="text-xs text-muted-foreground">
+                          Deletes data on this device and pushes deletions to the cloud, so all
+                          your other devices will be wiped on their next sync. Cannot be undone.
+                        </p>
+                      </div>
+                      <AlertDialogAction
+                        onClick={handleClearEverywhere}
+                        className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Clear everywhere
+                      </AlertDialogAction>
+                    </div>
+
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </div>
+                ) : (
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearLocal}>
+                      Clear Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                )}
               </AlertDialogContent>
             </AlertDialog>
           </div>
@@ -648,6 +760,8 @@ export function SettingsContent() {
         onOpenChange={setLogViewerOpen}
         log={syncState?.syncLog ?? []}
       />
+
+      <CategoryForm />
     </div>
   );
 }

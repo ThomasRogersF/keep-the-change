@@ -37,16 +37,6 @@ interface DashboardData {
   }>;
 }
 
-const defaultData: DashboardData = {
-  totalExpenses: 0,
-  totalIncome: 0,
-  net: 0,
-  upcomingSubscriptions: [],
-  categoryBreakdown: [],
-  recentTransactions: [],
-  monthlyTrend: [],
-};
-
 export function useDashboard(month: string) {
   return useLiveQuery(
     async (): Promise<DashboardData> => {
@@ -195,6 +185,6 @@ export function useDashboard(month: string) {
       };
     },
     [month],
-    defaultData
+    undefined
   );
 }

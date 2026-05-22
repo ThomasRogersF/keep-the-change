@@ -10,14 +10,13 @@ import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { useSettingsStore } from "@/lib/stores/settings.store";
 import { useIncome, useIncomeTotal } from "@/lib/hooks/use-income";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function IncomePage() {
   const openModal = useUIStore((s) => s.openModal);
   const selectedMonth = useSettingsStore((s) => s.selectedMonth);
   const entries = useIncome(selectedMonth);
   const total = useIncomeTotal(selectedMonth);
-
-  const hasEntries = entries.length > 0;
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -34,9 +33,16 @@ export default function IncomePage() {
 
       <MonthSelector />
 
-      {hasEntries ? (
-        <IncomeTable entries={entries} total={total} />
-      ) : (
+      {entries === undefined ? (
+        <>
+          <Skeleton className="h-20 w-full" />
+          <div className="space-y-2">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        </>
+      ) : entries.length === 0 ? (
         <EmptyState
           icon={TrendingUp}
           title="No income entries yet"
@@ -46,6 +52,8 @@ export default function IncomePage() {
             onClick: () => openModal("income", "create"),
           }}
         />
+      ) : (
+        <IncomeTable entries={entries} total={total} />
       )}
 
       <IncomeForm />

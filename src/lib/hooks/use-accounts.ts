@@ -10,7 +10,7 @@ export function useAccounts() {
       return all.filter((a) => !a.deletedAt);
     },
     [],
-    []
+    undefined
   );
 }
 
@@ -21,7 +21,7 @@ export function useMainAccounts() {
       return results.filter((a) => !a.deletedAt);
     },
     [],
-    []
+    undefined
   );
 }
 
@@ -32,6 +32,6 @@ export function useExternalAccounts() {
       return results.filter((a) => !a.deletedAt);
     },
     [],
-    []
+    undefined
   );
 }

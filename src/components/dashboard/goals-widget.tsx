@@ -10,7 +10,7 @@ import { format } from "date-fns";
 
 export function GoalsWidget() {
   const summary = useGoalsSummary();
-  const goals = useGoals();
+  const goals = useGoals() ?? [];
   const fmt = useCurrencyFormatter();
 
   if (summary.activeCount === 0) return null;

@@ -35,7 +35,7 @@ import {
 
 export function GoalForm() {
   const { activeModal, closeModal } = useUIStore();
-  const mainAccounts = useMainAccounts();
+  const mainAccounts = useMainAccounts() ?? [];
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const isOpen = activeModal?.type === "goal";

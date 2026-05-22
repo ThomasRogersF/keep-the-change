@@ -11,6 +11,7 @@ import { useUIStore } from "@/lib/stores/ui.store";
 import { useTransactions } from "@/lib/hooks/use-transactions";
 import { useCategories } from "@/lib/hooks/use-categories";
 import { useAccounts } from "@/lib/hooks/use-accounts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TransactionsPage() {
   const openModal = useUIStore((s) => s.openModal);
@@ -18,7 +19,8 @@ export default function TransactionsPage() {
   const categories = useCategories();
   const accounts = useAccounts();
 
-  const hasTransactions = transactions.length > 0;
+  const isLoading =
+    transactions === undefined || categories === undefined || accounts === undefined;
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -33,16 +35,16 @@ export default function TransactionsPage() {
         }
       />
 
-      {hasTransactions ? (
+      {isLoading ? (
         <>
-          <TransactionFilters />
-          <TransactionList
-            transactions={transactions}
-            categories={categories}
-            accounts={accounts}
-          />
+          <Skeleton className="h-10 w-full" />
+          <div className="space-y-2">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
         </>
-      ) : (
+      ) : transactions.length === 0 ? (
         <EmptyState
           icon={ArrowLeftRight}
           title="No transactions yet"
@@ -52,6 +54,15 @@ export default function TransactionsPage() {
             onClick: () => openModal("transaction", "create"),
           }}
         />
+      ) : (
+        <>
+          <TransactionFilters />
+          <TransactionList
+            transactions={transactions}
+            categories={categories}
+            accounts={accounts}
+          />
+        </>
       )}
 
       <TransactionForm />

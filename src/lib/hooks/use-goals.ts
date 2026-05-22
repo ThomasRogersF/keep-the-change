@@ -6,19 +6,19 @@ import { goalAllocationRepository } from "@/lib/db/repositories/goal-allocation.
 import { goalSpendLinkRepository } from "@/lib/db/repositories/goal-spend-link.repository";
 import type { Goal, GoalAllocation, GoalSpendLink } from "@/lib/types";
 
-export function useGoals(): Goal[] {
+export function useGoals(): Goal[] | undefined {
   return useLiveQuery(
     () => db.goals.filter((g) => !g.archived && !g.deletedAt).toArray(),
     [],
-    []
+    undefined
   );
 }
 
-export function useArchivedGoals(): Goal[] {
+export function useArchivedGoals(): Goal[] | undefined {
   return useLiveQuery(
     () => db.goals.filter((g) => g.archived && !g.deletedAt).toArray(),
     [],
-    []
+    undefined
   );
 }
 

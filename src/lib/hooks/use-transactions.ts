@@ -63,6 +63,6 @@ export function useTransactions() {
       return results;
     },
     [search, dateRange, selectedCategories, selectedAccounts, transactionType, amountRange],
-    []
+    undefined
   );
 }

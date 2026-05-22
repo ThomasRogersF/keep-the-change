@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\roger\\\\Documents\\\\GitHub\\\\keep-the-change\" -Recurse -Include \"page.tsx\", \"layout.tsx\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(Select-String -Pattern \"type Category\")",
+      "Bash(xargs grep -l \"category.*form\\\\|CategoryForm\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT=$?\")"
+    ]
+  }
+}

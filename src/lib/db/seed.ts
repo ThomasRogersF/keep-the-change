@@ -340,21 +340,24 @@ export async function clearAllData() {
 }
 
 export async function exportAllData() {
-  const filterActive = <T extends { deletedAt?: Date | null }>(items: T[]) =>
-    items.filter((r) => !r.deletedAt);
-
+  // Tombstones (deletedAt != null) MUST be included. Omitting them lets a stale
+  // backup re-create deleted records: importData() bumps updatedAt to "now" on
+  // every imported row, so a deleted record that's absent from the export would
+  // be re-added as active with a fresh timestamp and — via last-write-wins sync
+  // (sync-engine.ts:429) — overwrite the older cloud tombstone, resurrecting it
+  // on every device. Exporting the tombstone keeps the deletion propagating.
   const data = {
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
-    accounts: filterActive(await db.accounts.toArray()),
-    categories: filterActive(await db.categories.toArray()),
-    merchants: filterActive(await db.merchants.toArray()),
-    transactions: filterActive(await db.transactions.toArray()),
-    subscriptions: filterActive(await db.subscriptions.toArray()),
-    incomeEntries: filterActive(await db.incomeEntries.toArray()),
-    goals: filterActive(await db.goals.toArray()),
-    goalAllocations: filterActive(await db.goalAllocations.toArray()),
-    goalSpendLinks: filterActive(await db.goalSpendLinks.toArray()),
+    accounts: await db.accounts.toArray(),
+    categories: await db.categories.toArray(),
+    merchants: await db.merchants.toArray(),
+    transactions: await db.transactions.toArray(),
+    subscriptions: await db.subscriptions.toArray(),
+    incomeEntries: await db.incomeEntries.toArray(),
+    goals: await db.goals.toArray(),
+    goalAllocations: await db.goalAllocations.toArray(),
+    goalSpendLinks: await db.goalSpendLinks.toArray(),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -389,19 +392,20 @@ export async function importData(jsonString: string) {
     });
 
   await db.accounts.bulkAdd(
-    parseDateFields(data.accounts, ["createdAt", "updatedAt"])
+    parseDateFields(data.accounts, ["createdAt", "updatedAt", "deletedAt"])
   );
   await db.categories.bulkAdd(
-    parseDateFields(data.categories, ["createdAt", "updatedAt"])
+    parseDateFields(data.categories, ["createdAt", "updatedAt", "deletedAt"])
   );
   await db.merchants.bulkAdd(
-    parseDateFields(data.merchants, ["createdAt", "updatedAt"])
+    parseDateFields(data.merchants, ["createdAt", "updatedAt", "deletedAt"])
   );
   await db.transactions.bulkAdd(
     parseDateFields(data.transactions, [
       "date",
       "createdAt",
       "updatedAt",
+      "deletedAt",
     ])
   );
   await db.subscriptions.bulkAdd(
@@ -409,27 +413,28 @@ export async function importData(jsonString: string) {
       "nextRenewalDate",
       "createdAt",
       "updatedAt",
+      "deletedAt",
     ])
   );
   await db.incomeEntries.bulkAdd(
-    parseDateFields(data.incomeEntries, ["createdAt", "updatedAt"])
+    parseDateFields(data.incomeEntries, ["createdAt", "updatedAt", "deletedAt"])
   );
 
   // Import goals data (version 2+)
   if (data.version >= 2) {
     if (data.goals?.length) {
       await db.goals.bulkAdd(
-        parseDateFields(data.goals, ["createdAt", "updatedAt"])
+        parseDateFields(data.goals, ["createdAt", "updatedAt", "deletedAt"])
       );
     }
     if (data.goalAllocations?.length) {
       await db.goalAllocations.bulkAdd(
-        parseDateFields(data.goalAllocations, ["createdAt", "updatedAt"])
+        parseDateFields(data.goalAllocations, ["createdAt", "updatedAt", "deletedAt"])
       );
     }
     if (data.goalSpendLinks?.length) {
       await db.goalSpendLinks.bulkAdd(
-        parseDateFields(data.goalSpendLinks, ["createdAt", "updatedAt"])
+        parseDateFields(data.goalSpendLinks, ["createdAt", "updatedAt", "deletedAt"])
       );
     }
   }

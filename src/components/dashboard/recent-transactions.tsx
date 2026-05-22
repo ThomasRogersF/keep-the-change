@@ -22,7 +22,7 @@ interface RecentTransactionsProps {
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   const fmt = useCurrencyFormatter();
-  const categories = useCategories();
+  const categories = useCategories() ?? [];
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),

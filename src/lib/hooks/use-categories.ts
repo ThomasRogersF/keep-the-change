@@ -10,6 +10,6 @@ export function useCategories() {
       return all.filter((c) => !c.deletedAt);
     },
     [],
-    []
+    undefined
   );
 }

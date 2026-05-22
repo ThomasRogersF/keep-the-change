@@ -10,7 +10,7 @@ export function useSubscriptions() {
       return all.filter((s) => !s.deletedAt);
     },
     [],
-    []
+    undefined
   );
 }
 

@@ -380,6 +380,14 @@ export class SyncEngine {
       query = query.gt("updated_at", lastPullAt.toISOString());
     }
 
+    // Stable order is required for .range() pagination — without it Supabase
+    // does not guarantee row order across pages, so rows can be silently
+    // skipped or duplicated once a table crosses ~1000 rows. Tie-break on id
+    // because updated_at can collide at millisecond resolution.
+    query = query
+      .order("updated_at", { ascending: true })
+      .order("id", { ascending: true });
+
     // Paginate through results
     const allRemoteRows: RemoteRow[] = [];
     let from = 0;
