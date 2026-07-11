@@ -2,7 +2,19 @@
 
 import { create } from "zustand";
 
-type ModalType = "transaction" | "subscription" | "income" | "account" | "category" | "goal" | "goalAllocation" | "goalSpendLink" | null;
+type ModalType =
+  | "transaction"
+  | "subscription"
+  | "income"
+  | "account"
+  | "category"
+  | "goal"
+  | "goalAllocation"
+  | "goalSpendLink"
+  | "wealthAccount"
+  | "emergencyFund"
+  | "internalTransfer"
+  | null;
 
 interface ModalState {
   type: ModalType;
@@ -21,6 +33,9 @@ interface UIState {
 
   mobileAddOpen: boolean;
   setMobileAddOpen: (open: boolean) => void;
+
+  moreMenuOpen: boolean;
+  setMoreMenuOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -34,4 +49,7 @@ export const useUIStore = create<UIState>((set) => ({
 
   mobileAddOpen: false,
   setMobileAddOpen: (open) => set({ mobileAddOpen: open }),
+
+  moreMenuOpen: false,
+  setMoreMenuOpen: (open) => set({ moreMenuOpen: open }),
 }));
