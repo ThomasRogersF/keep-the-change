@@ -25,6 +25,7 @@ import {
   Clock,
   Tag,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -653,6 +654,33 @@ export function SettingsContent() {
               )}
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Database availability */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4" />
+            Database availability
+          </CardTitle>
+          <CardDescription>Monitored by a scheduled external check</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full shrink-0 bg-green-500" />
+              <span className="text-sm font-medium">Checked by scheduled monitor</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A scheduled job pings the Supabase database once a day to keep it active and
+              confirm it&apos;s reachable. Results are recorded in the deployment&apos;s server logs.
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              This is a best-effort keep-alive and does not guarantee a Free Plan project will
+              never pause.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

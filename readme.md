@@ -65,6 +65,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 
 Then run the migration in `supabase/migrations/001_sync_tables.sql` against your Supabase project to create the 9 sync tables with RLS policies.
 
+For the optional daily Supabase keep-alive (a Vercel Cron health check that keeps a Free Plan project active), also run `supabase/migrations/002_keep_alive_health_check.sql` and add a **server-only** `CRON_SECRET` to Vercel (not `.env.local` in production; only set it locally to test the endpoint). It is distinct from the two public `NEXT_PUBLIC_` keys above. See [`docs/SUPABASE_KEEP_ALIVE.md`](docs/SUPABASE_KEEP_ALIVE.md) for setup, testing, and limitations.
+
 ### Scripts
 
 | Command | Purpose |
