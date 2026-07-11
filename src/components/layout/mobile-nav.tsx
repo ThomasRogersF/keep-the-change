@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
   Target,
   TrendingUp,
+  MoreHorizontal,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname();
   const setMobileAddOpen = useUIStore((s) => s.setMobileAddOpen);
+  const setMoreMenuOpen = useUIStore((s) => s.setMoreMenuOpen);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
@@ -59,6 +61,20 @@ export function MobileNav() {
             </Link>
           );
         })}
+        <button
+          onClick={() => setMoreMenuOpen(true)}
+          className={cn(
+            "flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors",
+            ["/wealth", "/subscriptions", "/accounts", "/settings"].some((href) =>
+              pathname.startsWith(href)
+            )
+              ? "text-primary font-medium"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <MoreHorizontal className="w-5 h-5" />
+          <span>More</span>
+        </button>
       </nav>
     </div>
   );

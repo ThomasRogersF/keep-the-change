@@ -20,6 +20,31 @@ interface SettingsState {
 
   autoSyncEnabled: boolean;
   setAutoSyncEnabled: (v: boolean) => void;
+
+  // ─── Wealth module ──────────────────────────────────────
+  defaultWealthCurrency: string;
+  setDefaultWealthCurrency: (currency: string) => void;
+
+  emergencyFundsCountAsLiquid: boolean;
+  setEmergencyFundsCountAsLiquid: (v: boolean) => void;
+
+  showInvestmentGainsOnDashboard: boolean;
+  setShowInvestmentGainsOnDashboard: (v: boolean) => void;
+
+  includeEstimatedInterestInProjections: boolean;
+  setIncludeEstimatedInterestInProjections: (v: boolean) => void;
+
+  countConfirmedInterestAsIncome: boolean;
+  setCountConfirmedInterestAsIncome: (v: boolean) => void;
+
+  showCryptoAssets: boolean;
+  setShowCryptoAssets: (v: boolean) => void;
+
+  confirmBeforeEmergencyWithdrawals: boolean;
+  setConfirmBeforeEmergencyWithdrawals: (v: boolean) => void;
+
+  showWealthWidgetOnDashboard: boolean;
+  setShowWealthWidgetOnDashboard: (v: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -42,6 +67,36 @@ export const useSettingsStore = create<SettingsState>()(
 
       autoSyncEnabled: true,
       setAutoSyncEnabled: (autoSyncEnabled) => set({ autoSyncEnabled }),
+
+      defaultWealthCurrency: "",
+      setDefaultWealthCurrency: (defaultWealthCurrency) => set({ defaultWealthCurrency }),
+
+      emergencyFundsCountAsLiquid: true,
+      setEmergencyFundsCountAsLiquid: (emergencyFundsCountAsLiquid) =>
+        set({ emergencyFundsCountAsLiquid }),
+
+      showInvestmentGainsOnDashboard: true,
+      setShowInvestmentGainsOnDashboard: (showInvestmentGainsOnDashboard) =>
+        set({ showInvestmentGainsOnDashboard }),
+
+      includeEstimatedInterestInProjections: true,
+      setIncludeEstimatedInterestInProjections: (includeEstimatedInterestInProjections) =>
+        set({ includeEstimatedInterestInProjections }),
+
+      countConfirmedInterestAsIncome: false,
+      setCountConfirmedInterestAsIncome: (countConfirmedInterestAsIncome) =>
+        set({ countConfirmedInterestAsIncome }),
+
+      showCryptoAssets: true,
+      setShowCryptoAssets: (showCryptoAssets) => set({ showCryptoAssets }),
+
+      confirmBeforeEmergencyWithdrawals: true,
+      setConfirmBeforeEmergencyWithdrawals: (confirmBeforeEmergencyWithdrawals) =>
+        set({ confirmBeforeEmergencyWithdrawals }),
+
+      showWealthWidgetOnDashboard: true,
+      setShowWealthWidgetOnDashboard: (showWealthWidgetOnDashboard) =>
+        set({ showWealthWidgetOnDashboard }),
     }),
     {
       name: "ledgerly-settings",
@@ -51,6 +106,14 @@ export const useSettingsStore = create<SettingsState>()(
         subtractGoalsFromAvailable: state.subtractGoalsFromAvailable,
         syncEnabled: state.syncEnabled,
         autoSyncEnabled: state.autoSyncEnabled,
+        defaultWealthCurrency: state.defaultWealthCurrency,
+        emergencyFundsCountAsLiquid: state.emergencyFundsCountAsLiquid,
+        showInvestmentGainsOnDashboard: state.showInvestmentGainsOnDashboard,
+        includeEstimatedInterestInProjections: state.includeEstimatedInterestInProjections,
+        countConfirmedInterestAsIncome: state.countConfirmedInterestAsIncome,
+        showCryptoAssets: state.showCryptoAssets,
+        confirmBeforeEmergencyWithdrawals: state.confirmBeforeEmergencyWithdrawals,
+        showWealthWidgetOnDashboard: state.showWealthWidgetOnDashboard,
       }),
     }
   )

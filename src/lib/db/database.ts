@@ -10,6 +10,14 @@ import type {
   GoalAllocation,
   GoalSpendLink,
   SyncState,
+  WealthAccount,
+  EmergencyFund,
+  EmergencyFundActivity,
+  YieldProfile,
+  YieldRateHistory,
+  AssetHolding,
+  InvestmentActivity,
+  InternalTransfer,
 } from "@/lib/types";
 
 class LedgerlyDB extends Dexie {
@@ -23,6 +31,14 @@ class LedgerlyDB extends Dexie {
   goalAllocations!: EntityTable<GoalAllocation, "id">;
   goalSpendLinks!: EntityTable<GoalSpendLink, "id">;
   syncState!: EntityTable<SyncState, "userId">;
+  wealthAccounts!: EntityTable<WealthAccount, "id">;
+  emergencyFunds!: EntityTable<EmergencyFund, "id">;
+  emergencyFundActivities!: EntityTable<EmergencyFundActivity, "id">;
+  yieldProfiles!: EntityTable<YieldProfile, "id">;
+  yieldRateHistories!: EntityTable<YieldRateHistory, "id">;
+  assetHoldings!: EntityTable<AssetHolding, "id">;
+  investmentActivities!: EntityTable<InvestmentActivity, "id">;
+  internalTransfers!: EntityTable<InternalTransfer, "id">;
 
   constructor() {
     super("LedgerlyDB");
@@ -92,6 +108,26 @@ class LedgerlyDB extends Dexie {
             });
         }
       });
+    this.version(4).stores({
+      accounts: "id, name, type, createdAt, updatedAt, deletedAt",
+      categories: "id, name, createdAt, updatedAt, deletedAt",
+      merchants: "id, name, createdAt, updatedAt, deletedAt",
+      transactions: "id, date, type, categoryId, merchantId, accountId, createdAt, updatedAt, deletedAt",
+      subscriptions: "id, name, nextRenewalDate, accountId, active, createdAt, updatedAt, deletedAt",
+      incomeEntries: "id, month, source, createdAt, updatedAt, deletedAt",
+      goals: "id, accountId, archived, createdAt, updatedAt, deletedAt",
+      goalAllocations: "id, goalId, date, createdAt, updatedAt, deletedAt",
+      goalSpendLinks: "id, goalId, transactionId, createdAt, updatedAt, deletedAt",
+      syncState: "userId",
+      wealthAccounts: "id, type, archived, createdAt, updatedAt, deletedAt",
+      emergencyFunds: "id, wealthAccountId, createdAt, updatedAt, deletedAt",
+      emergencyFundActivities: "id, emergencyFundId, date, type, createdAt, updatedAt, deletedAt",
+      yieldProfiles: "id, wealthAccountId, createdAt, updatedAt, deletedAt",
+      yieldRateHistories: "id, yieldProfileId, effectiveDate, createdAt, updatedAt, deletedAt",
+      assetHoldings: "id, wealthAccountId, assetType, symbol, createdAt, updatedAt, deletedAt",
+      investmentActivities: "id, wealthAccountId, assetHoldingId, type, date, createdAt, updatedAt, deletedAt",
+      internalTransfers: "id, fromId, toId, date, createdAt, updatedAt, deletedAt",
+    });
   }
 }
 

@@ -325,6 +325,287 @@ export async function loadDemoData() {
       deletedAt: null,
     },
   ]);
+
+  // ─── Wealth module ─────────────────────────────────────
+  const emergencyAccountId = crypto.randomUUID();
+  const emergencyFundId = crypto.randomUUID();
+  const hysaAccountId = crypto.randomUUID();
+  const hysaYieldProfileId = crypto.randomUUID();
+  const kochinitoAccountId = crypto.randomUUID();
+  const kochinitoYieldProfileId = crypto.randomUUID();
+  const brokerageAccountId = crypto.randomUUID();
+  const vooHoldingId = crypto.randomUUID();
+  const btcHoldingId = crypto.randomUUID();
+
+  await db.wealthAccounts.bulkAdd([
+    {
+      id: emergencyAccountId,
+      name: "Personal Emergency Fund",
+      type: "cash",
+      assetClass: "fiat",
+      balance: 6500,
+      currency: "USD",
+      institution: "Ally Bank",
+      riskLevel: "low",
+      liquidity: "immediate",
+      insuranceType: "FDIC",
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: hysaAccountId,
+      name: "High-Yield Savings",
+      type: "cash",
+      assetClass: "fiat",
+      balance: 8500,
+      currency: "USD",
+      institution: "Marcus by Goldman Sachs",
+      riskLevel: "low",
+      liquidity: "immediate",
+      insuranceType: "FDIC",
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: kochinitoAccountId,
+      name: "Kochinito",
+      type: "cash",
+      assetClass: "crypto",
+      balance: 2000,
+      currency: "USD",
+      institution: "Kochinito",
+      riskLevel: "medium",
+      liquidity: "short_term",
+      insuranceType: "none",
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: brokerageAccountId,
+      name: "Brokerage Account",
+      type: "brokerage",
+      assetClass: "fiat",
+      balance: 456.25,
+      currency: "USD",
+      institution: "Fidelity",
+      riskLevel: "medium",
+      liquidity: "short_term",
+      insuranceType: "SIPC",
+      archived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.emergencyFunds.bulkAdd([
+    {
+      id: emergencyFundId,
+      name: "Personal Emergency Fund",
+      wealthAccountId: emergencyAccountId,
+      monthlyExpenses: 3000,
+      targetMonths: 5,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.emergencyFundActivities.bulkAdd([
+    {
+      id: crypto.randomUUID(),
+      emergencyFundId,
+      type: "contribution",
+      amount: 2500,
+      date: format(subDays(now, 90), "yyyy-MM-dd"),
+      note: "Initial contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      emergencyFundId,
+      type: "contribution",
+      amount: 2500,
+      date: format(subDays(now, 60), "yyyy-MM-dd"),
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      emergencyFundId,
+      type: "contribution",
+      amount: 1500,
+      date: format(subDays(now, 30), "yyyy-MM-dd"),
+      note: "Monthly contribution",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.yieldProfiles.bulkAdd([
+    {
+      id: hysaYieldProfileId,
+      wealthAccountId: hysaAccountId,
+      rateType: "APY",
+      currentRate: 4.25,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: kochinitoYieldProfileId,
+      wealthAccountId: kochinitoAccountId,
+      rateType: "APR",
+      currentRate: 10,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.yieldRateHistories.bulkAdd([
+    {
+      id: crypto.randomUUID(),
+      yieldProfileId: hysaYieldProfileId,
+      rate: 4.25,
+      effectiveDate: format(subDays(now, 90), "yyyy-MM-dd"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      yieldProfileId: kochinitoYieldProfileId,
+      rate: 10,
+      effectiveDate: format(subDays(now, 90), "yyyy-MM-dd"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.assetHoldings.bulkAdd([
+    {
+      id: vooHoldingId,
+      wealthAccountId: brokerageAccountId,
+      assetType: "etf",
+      symbol: "VOO",
+      name: "Vanguard S&P 500 ETF",
+      quantity: 3.25,
+      costBasisTotal: 1543.75,
+      currentPricePerUnit: 500,
+      priceUpdatedAt: subDays(now, 5),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: btcHoldingId,
+      wealthAccountId: brokerageAccountId,
+      assetType: "crypto",
+      symbol: "BTC",
+      name: "Bitcoin",
+      quantity: 0,
+      costBasisTotal: 0,
+      currentPricePerUnit: 65000,
+      priceUpdatedAt: subDays(now, 10),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.investmentActivities.bulkAdd([
+    {
+      id: crypto.randomUUID(),
+      wealthAccountId: brokerageAccountId,
+      assetHoldingId: vooHoldingId,
+      type: "buy",
+      date: format(subDays(now, 60), "yyyy-MM-dd"),
+      quantity: 3.25,
+      pricePerUnit: 475,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      wealthAccountId: brokerageAccountId,
+      assetHoldingId: vooHoldingId,
+      type: "priceUpdate",
+      date: format(subDays(now, 5), "yyyy-MM-dd"),
+      pricePerUnit: 500,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      wealthAccountId: brokerageAccountId,
+      assetHoldingId: btcHoldingId,
+      type: "buy",
+      date: format(subDays(now, 45), "yyyy-MM-dd"),
+      quantity: 0.01,
+      pricePerUnit: 30000,
+      note: "Trying it out",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      wealthAccountId: brokerageAccountId,
+      assetHoldingId: btcHoldingId,
+      type: "sell",
+      date: format(subDays(now, 10), "yyyy-MM-dd"),
+      quantity: 0.01,
+      pricePerUnit: 30000,
+      note: "Closed the position",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
+
+  await db.internalTransfers.bulkAdd([
+    {
+      id: crypto.randomUUID(),
+      date: format(subDays(now, 90), "yyyy-MM-dd"),
+      amount: 2000,
+      fromType: "account",
+      fromId: checkingId,
+      toType: "wealthAccount",
+      toId: emergencyAccountId,
+      note: "Starting the emergency fund",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    {
+      id: crypto.randomUUID(),
+      date: format(subDays(now, 80), "yyyy-MM-dd"),
+      amount: 3000,
+      fromType: "account",
+      fromId: checkingId,
+      toType: "wealthAccount",
+      toId: hysaAccountId,
+      note: "Moving savings to high-yield",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+  ]);
 }
 
 export async function clearAllData() {
@@ -337,6 +618,14 @@ export async function clearAllData() {
   await db.goals.clear();
   await db.goalAllocations.clear();
   await db.goalSpendLinks.clear();
+  await db.wealthAccounts.clear();
+  await db.emergencyFunds.clear();
+  await db.emergencyFundActivities.clear();
+  await db.yieldProfiles.clear();
+  await db.yieldRateHistories.clear();
+  await db.assetHoldings.clear();
+  await db.investmentActivities.clear();
+  await db.internalTransfers.clear();
 }
 
 export async function exportAllData() {
@@ -347,7 +636,7 @@ export async function exportAllData() {
   // (sync-engine.ts:429) — overwrite the older cloud tombstone, resurrecting it
   // on every device. Exporting the tombstone keeps the deletion propagating.
   const data = {
-    version: 3,
+    version: 4,
     exportedAt: new Date().toISOString(),
     accounts: await db.accounts.toArray(),
     categories: await db.categories.toArray(),
@@ -358,6 +647,14 @@ export async function exportAllData() {
     goals: await db.goals.toArray(),
     goalAllocations: await db.goalAllocations.toArray(),
     goalSpendLinks: await db.goalSpendLinks.toArray(),
+    wealthAccounts: await db.wealthAccounts.toArray(),
+    emergencyFunds: await db.emergencyFunds.toArray(),
+    emergencyFundActivities: await db.emergencyFundActivities.toArray(),
+    yieldProfiles: await db.yieldProfiles.toArray(),
+    yieldRateHistories: await db.yieldRateHistories.toArray(),
+    assetHoldings: await db.assetHoldings.toArray(),
+    investmentActivities: await db.investmentActivities.toArray(),
+    internalTransfers: await db.internalTransfers.toArray(),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -439,11 +736,63 @@ export async function importData(jsonString: string) {
     }
   }
 
+  // Import Wealth module data (version 4+)
+  if (data.version >= 4) {
+    if (data.wealthAccounts?.length) {
+      await db.wealthAccounts.bulkAdd(
+        parseDateFields(data.wealthAccounts, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.emergencyFunds?.length) {
+      await db.emergencyFunds.bulkAdd(
+        parseDateFields(data.emergencyFunds, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.emergencyFundActivities?.length) {
+      await db.emergencyFundActivities.bulkAdd(
+        parseDateFields(data.emergencyFundActivities, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.yieldProfiles?.length) {
+      await db.yieldProfiles.bulkAdd(
+        parseDateFields(data.yieldProfiles, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.yieldRateHistories?.length) {
+      await db.yieldRateHistories.bulkAdd(
+        parseDateFields(data.yieldRateHistories, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.assetHoldings?.length) {
+      await db.assetHoldings.bulkAdd(
+        parseDateFields(data.assetHoldings, [
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "priceUpdatedAt",
+        ])
+      );
+    }
+    if (data.investmentActivities?.length) {
+      await db.investmentActivities.bulkAdd(
+        parseDateFields(data.investmentActivities, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+    if (data.internalTransfers?.length) {
+      await db.internalTransfers.bulkAdd(
+        parseDateFields(data.internalTransfers, ["createdAt", "updatedAt", "deletedAt"])
+      );
+    }
+  }
+
   // Bump updatedAt on all imported records so they push on next sync
   const allTables = [
     "accounts", "categories", "merchants",
     "transactions", "subscriptions", "incomeEntries",
     "goals", "goalAllocations", "goalSpendLinks",
+    "wealthAccounts", "emergencyFunds", "emergencyFundActivities",
+    "yieldProfiles", "yieldRateHistories", "assetHoldings",
+    "investmentActivities", "internalTransfers",
   ] as const;
   for (const tableName of allTables) {
     await db.table(tableName).toCollection().modify({ updatedAt: now });

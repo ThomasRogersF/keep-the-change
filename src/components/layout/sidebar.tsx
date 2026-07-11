@@ -10,6 +10,7 @@ import {
   RefreshCw,
   TrendingUp,
   Wallet,
+  PiggyBank,
   Target,
   Settings,
   Sun,
@@ -26,6 +27,7 @@ const navItems = [
   { label: "Subscriptions", href: "/subscriptions", icon: RefreshCw },
   { label: "Income", href: "/income", icon: TrendingUp },
   { label: "Goals", href: "/goals", icon: Target },
+  { label: "Wealth", href: "/wealth", icon: PiggyBank },
   { label: "Accounts", href: "/accounts", icon: Wallet },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

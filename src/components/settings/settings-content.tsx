@@ -67,6 +67,7 @@ import { CategoryList } from "@/components/categories/category-list";
 import { CategoryForm } from "@/components/categories/category-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WealthSettingsCard } from "@/components/settings/wealth-settings-card";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -368,6 +369,9 @@ export function SettingsContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Wealth */}
+      <WealthSettingsCard />
 
       {/* Categories */}
       <Card>
