@@ -3,6 +3,7 @@
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
 import { MobileAddSheet } from "./mobile-add-sheet";
+import { MoreMenuSheet } from "./more-menu-sheet";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       <MobileNav />
       <MobileAddSheet />
+      <MoreMenuSheet />
     </div>
   );
 }
