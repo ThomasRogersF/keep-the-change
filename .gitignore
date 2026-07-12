@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# design screenshot pipeline output (scripts/screenshot-pages.mjs)
+/design-screenshots/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
