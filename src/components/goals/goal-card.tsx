@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Target, Calendar, MoreHorizontal, Plus, LinkIcon, Pencil, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FintechCard } from "@/components/ui/fintech-card";
 import { useCurrencyFormatter } from "@/lib/hooks/use-currency";
 import { useGoalProgress } from "@/lib/hooks/use-goals";
 import { GoalProgressBar } from "./goal-progress-bar";
@@ -36,18 +37,18 @@ export function GoalCard({
   const progress = useGoalProgress(goal.id);
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4 transition-colors hover:border-primary/20">
+    <FintechCard className="p-5 space-y-4 hover:border-finance-goals/20 transition-all">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <Link href={`/goals/${goal.id}`} className="flex items-center gap-3 min-w-0 group">
           <div className={cn(
             "flex items-center justify-center w-10 h-10 rounded-full shrink-0",
-            goal.archived ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+            goal.archived ? "bg-muted text-muted-foreground" : "bg-finance-goals/10 text-finance-goals"
           )}>
             <Target className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm truncate group-hover:text-finance-goals transition-colors">
               {goal.name}
             </h3>
             {goal.targetDate && (
@@ -100,7 +101,12 @@ export function GoalCard({
       <div className="space-y-2">
         <GoalProgressBar percent={progress.percent} isOverfunded={progress.isOverfunded} />
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium tabular-nums">{fmt(progress.saved)}</span>
+          <span className="font-medium tabular-nums text-foreground/90">
+            {fmt(progress.saved)}
+            <span className="text-xs text-muted-foreground ml-1.5 font-normal tracking-tight">
+              ({progress.percent.toFixed(0)}%)
+            </span>
+          </span>
           <span className="text-muted-foreground tabular-nums">
             of {fmt(goal.targetAmount)}
           </span>
@@ -130,6 +136,6 @@ export function GoalCard({
           </Button>
         </div>
       )}
-    </div>
+    </FintechCard>
   );
 }

@@ -5,10 +5,6 @@ import { useUIStore } from "@/lib/stores/ui.store";
 import { db } from "@/lib/db/database";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Wallet, Landmark, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +22,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { WealthAccount } from "@/lib/types";
+import { useCurrencyFormatter } from "@/lib/hooks/use-currency";
+import { FintechCard } from "@/components/ui/fintech-card";
+import { Wallet, Landmark, MoreHorizontal, Pencil, Trash2, Shield, Gem } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface AccountListProps {
   accounts: Account[];
+  wealthAccounts?: WealthAccount[];
 }
 
-export function AccountList({ accounts }: AccountListProps) {
+export function AccountList({ accounts, wealthAccounts = [] }: AccountListProps) {
   const openModal = useUIStore((s) => s.openModal);
+  const fmt = useCurrencyFormatter();
 
   const mainAccounts = accounts.filter((a) => a.type === "main");
   const externalAccounts = accounts.filter((a) => a.type === "external");
@@ -48,11 +52,11 @@ export function AccountList({ accounts }: AccountListProps) {
   };
 
   const renderAccount = (account: Account) => (
-    <Card key={account.id} className="group">
-      <CardContent className="flex items-center gap-4 py-4">
+    <FintechCard key={account.id} className="group hover:border-primary/20 transition-all">
+      <div className="flex items-center gap-4 p-4">
         <div className={cn(
           "flex items-center justify-center w-10 h-10 rounded-full shrink-0",
-          account.type === "main" ? "bg-primary/10 text-primary" : "bg-chart-5/10 text-chart-5"
+          account.type === "main" ? "bg-finance-budgeting/10 text-finance-budgeting" : "bg-muted text-muted-foreground"
         )}>
           {account.type === "main" ? (
             <Wallet className="w-5 h-5" />
@@ -61,13 +65,13 @@ export function AccountList({ accounts }: AccountListProps) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{account.name}</p>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs font-normal">
+          <p className="font-medium text-[15px] truncate">{account.name}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-muted-foreground">
+              {account.type === "main" ? "Budget Account" : "External Tracked"}
+            </span>
+            <Badge variant="secondary" className="text-[10px] uppercase font-medium tracking-wide">
               {account.currency}
-            </Badge>
-            <Badge variant="outline" className="text-xs font-normal">
-              {account.type === "main" ? "Budget" : "External"}
             </Badge>
           </div>
         </div>
@@ -109,22 +113,63 @@ export function AccountList({ accounts }: AccountListProps) {
             </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
-      </CardContent>
-    </Card>
+      </div>
+    </FintechCard>
+  );
+
+  const renderWealthAccount = (wa: WealthAccount) => (
+    <FintechCard key={wa.id} variant="vault" className="group">
+      <div className="flex items-center gap-4 p-4">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-finance-wealth-foreground shrink-0 border border-white/5">
+          {wa.type === "cash" ? <Shield className="w-5 h-5" /> : <Gem className="w-5 h-5" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-[15px] truncate">{wa.name}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs opacity-70">
+              {wa.type === "cash" ? "Cash & Savings" : "Investments"}
+            </span>
+            {wa.institution && (
+              <>
+                <span className="text-xs opacity-50">•</span>
+                <span className="text-xs opacity-70 truncate">{wa.institution}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="font-semibold tabular-nums text-foreground tracking-tight">
+            {fmt(wa.balance)}
+          </p>
+        </div>
+      </div>
+    </FintechCard>
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {mainAccounts.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">Budget Accounts</h3>
-          <div className="space-y-2">{mainAccounts.map(renderAccount)}</div>
+          <h3 className="text-sm font-semibold tracking-wide uppercase text-finance-budgeting pl-1">
+            Budget Accounts
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">{mainAccounts.map(renderAccount)}</div>
+        </div>
+      )}
+      {wealthAccounts.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold tracking-wide uppercase text-finance-wealth pl-1">
+            Wealth & Investment
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">{wealthAccounts.map(renderWealthAccount)}</div>
         </div>
       )}
       {externalAccounts.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">External Accounts</h3>
-          <div className="space-y-2">{externalAccounts.map(renderAccount)}</div>
+          <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground pl-1">
+            External Accounts
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">{externalAccounts.map(renderAccount)}</div>
         </div>
       )}
     </div>

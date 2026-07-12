@@ -8,11 +8,13 @@ import { AccountForm } from "@/components/accounts/account-form";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { useAccounts } from "@/lib/hooks/use-accounts";
+import { useWealthAccounts } from "@/lib/hooks/use-wealth-accounts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountsPage() {
   const openModal = useUIStore((s) => s.openModal);
   const accounts = useAccounts();
+  const wealthAccounts = useWealthAccounts();
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -27,13 +29,13 @@ export default function AccountsPage() {
         }
       />
 
-      {accounts === undefined ? (
+      {accounts === undefined || wealthAccounts === undefined ? (
         <div className="space-y-2">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-16 w-full" />
           ))}
         </div>
-      ) : accounts.length === 0 ? (
+      ) : accounts.length === 0 && wealthAccounts.length === 0 ? (
         <EmptyState
           icon={Wallet}
           title="No accounts yet"
@@ -44,7 +46,7 @@ export default function AccountsPage() {
           }}
         />
       ) : (
-        <AccountList accounts={accounts} />
+        <AccountList accounts={accounts} wealthAccounts={wealthAccounts} />
       )}
 
       <AccountForm />

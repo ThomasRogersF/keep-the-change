@@ -9,14 +9,16 @@ import { MonthSelector } from "@/components/income/month-selector";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { useSettingsStore } from "@/lib/stores/settings.store";
-import { useIncome, useIncomeTotal } from "@/lib/hooks/use-income";
+import { useIncome, useIncomeTotal, useIncomeTrend } from "@/lib/hooks/use-income";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IncomeTrendChart } from "@/components/income/income-trend-chart";
 
 export default function IncomePage() {
   const openModal = useUIStore((s) => s.openModal);
   const selectedMonth = useSettingsStore((s) => s.selectedMonth);
   const entries = useIncome(selectedMonth);
   const total = useIncomeTotal(selectedMonth);
+  const trendData = useIncomeTrend(selectedMonth);
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -53,7 +55,15 @@ export default function IncomePage() {
           }}
         />
       ) : (
-        <IncomeTable entries={entries} total={total} />
+        <div className="space-y-4">
+          <IncomeTable entries={entries} total={total} />
+          {trendData && trendData.length > 0 && (
+            <div className="rounded-xl border bg-card p-5">
+              <h3 className="text-sm font-medium text-muted-foreground">6-Month Trend</h3>
+              <IncomeTrendChart data={trendData} />
+            </div>
+          )}
+        </div>
       )}
 
       <IncomeForm />

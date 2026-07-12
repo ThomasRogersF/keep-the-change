@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
 
 interface IncomeTableProps {
   entries: IncomeEntry[];
@@ -51,17 +51,13 @@ export function IncomeTable({ entries, total }: IncomeTableProps) {
   return (
     <div className="space-y-4">
       {/* Total card */}
-      <Card className="bg-success/5 border-success/20">
-        <CardContent className="flex items-center gap-3 py-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-success/10 text-success">
-            <DollarSign className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Total Income</p>
-            <p className="text-xl font-semibold text-success tabular-nums">{fmt(total)}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <StatCard
+        label="Total Income"
+        value={total}
+        icon={DollarSign}
+        semanticTone="income"
+        variant="emphasis"
+      />
 
       {/* Desktop table */}
       <div className="hidden md:block rounded-lg border bg-card">
