@@ -28,7 +28,7 @@ export function MobileNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
       {/* Floating Add Button */}
-      <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10 block pb-[env(safe-area-inset-bottom)]">
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-6 z-50 block">
         <button
           onClick={() => setMobileAddOpen(true)}
           className="flex items-center justify-center w-14 h-14 rounded-full bg-finance-budgeting text-finance-budgeting-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 active:scale-95 transition-all"
