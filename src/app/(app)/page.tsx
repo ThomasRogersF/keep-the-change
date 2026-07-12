@@ -3,7 +3,7 @@
 import { ArrowDownLeft, ArrowUpRight, RefreshCw, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { MonthSelector } from "@/components/income/month-selector";
-import { StatCard } from "@/components/dashboard/stat-card";
+import { StatCard } from "@/components/ui/stat-card";
 import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart";
 import { CategoryBreakdownChart } from "@/components/dashboard/category-breakdown-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
@@ -30,7 +30,7 @@ export default function DashboardPage() {
 
       {data === undefined ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
@@ -45,30 +45,39 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            <div className="col-span-2 lg:col-span-4 max-w-full">
+              <StatCard
+                label="Monthly Net"
+                value={data.net}
+                icon={TrendingUp}
+                semanticTone={data.net >= 0 ? "income" : "expense"}
+                variant="emphasis"
+                className="mb-1"
+                trend={{
+                  value: 0, // Placeholder, usually computed against previous month
+                  positiveIsGood: true
+                }}
+              />
+            </div>
             <StatCard
-              title="Expenses"
-              value={fmt(data.totalExpenses)}
-              icon={ArrowUpRight}
-              trend="down"
-            />
-            <StatCard
-              title="Income"
-              value={fmt(data.totalIncome)}
+              label="Income"
+              value={data.totalIncome}
               icon={ArrowDownLeft}
-              trend="up"
+              semanticTone="income"
             />
             <StatCard
-              title="Net"
-              value={fmt(data.net)}
-              icon={TrendingUp}
-              trend={data.net >= 0 ? "up" : "down"}
+              label="Expenses"
+              value={data.totalExpenses}
+              icon={ArrowUpRight}
+              semanticTone="budgeting"
             />
             <StatCard
-              title="Upcoming Subs"
-              value={`${data.upcomingSubscriptions.length} due`}
+              label="Upcoming Subs"
+              valueNode={<span className="text-xl tabular-nums font-semibold">{data.upcomingSubscriptions.length} due</span>}
               icon={RefreshCw}
             />
+            {/* Need one more space if lg:grid-cols-4? We have 3 secondary metrics. Let's make Net full width or span 2, then Income, Exp, Subs span. Let's reorganize. */}
           </div>
 
           {/* Goals widget */}

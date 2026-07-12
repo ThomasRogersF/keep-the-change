@@ -63,10 +63,14 @@ export default function LoginPage() {
   if (user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-background">
+      {/* Subtle radial background treatment */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_center,var(--color-primary)_0%,transparent_40%)] opacity-[0.08] dark:opacity-[0.15] pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_bottom,var(--color-finance-wealth)_0%,transparent_50%)] opacity-[0.04] dark:opacity-[0.08] pointer-events-none" />
+
       <Toaster position="top-center" richColors />
 
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full max-w-sm space-y-8 z-10 relative">
         {/* Brand */}
         <div className="flex flex-col items-center space-y-3">
           <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary shadow-lg shadow-primary/20">
@@ -133,7 +137,8 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  size="lg"
+                  className="w-full font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all"
                   disabled={state === "sending" || !email.trim()}
                 >
                   {state === "sending" ? (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Target, ArrowRight, Calendar } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { FintechCard } from "@/components/ui/fintech-card";
 import { useGoalsSummary, useGoals } from "@/lib/hooks/use-goals";
 import { useCurrencyFormatter } from "@/lib/hooks/use-currency";
 import { GoalProgressBar } from "@/components/goals/goal-progress-bar";
@@ -28,11 +28,11 @@ export function GoalsWidget() {
 
   return (
     <Link href="/goals" className="block">
-      <Card className="transition-colors hover:border-primary/20">
-        <CardContent className="py-4 space-y-3">
+      <FintechCard className="transition-all hover:border-finance-goals/50 border-b-4 border-b-finance-goals">
+        <div className="p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary shrink-0">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-finance-goals/10 text-finance-goals shrink-0">
                 <Target className="w-5 h-5" />
               </div>
               <div>
@@ -56,8 +56,8 @@ export function GoalsWidget() {
               </span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </FintechCard>
     </Link>
   );
 }

@@ -5,8 +5,8 @@ import { useCurrencyFormatter } from "@/lib/hooks/use-currency";
 import { useCategories } from "@/lib/hooks/use-categories";
 import { formatDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FintechCard } from "@/components/ui/fintech-card";
+import { FinancialActivityIcon } from "@/components/ui/financial-activity-icon";
 
 interface RecentTransactionsProps {
   transactions: Array<{
@@ -30,39 +30,41 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   );
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Recent Transactions</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <FintechCard className="p-0">
+      <div className="px-5 pt-5 pb-2">
+        <h3 className="text-base font-semibold">Recent Transactions</h3>
+      </div>
+      <div className="p-1 px-3">
         {transactions.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p>
+          <p className="text-sm text-muted-foreground py-6 text-center">No transactions yet</p>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1 pb-3">
             {transactions.map((tx) => {
               const cat = tx.categoryId ? categoryMap.get(tx.categoryId) : null;
+
+              // Use tx.note if available, otherwise name of category, otherwise just "Expense"/"Income"
+              const displayTitle = tx.note || cat?.name || (tx.type === "expense" ? "Expense" : "Income");
+              // Use category or default type for icon mapping
+              const iconKey = cat?.name || displayTitle;
+
               return (
-                <div key={tx.id} className="flex items-center gap-3 py-2">
+                <div key={tx.id} className="flex items-center gap-3.5 py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
-                    tx.type === "expense" ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
+                    "flex items-center justify-center w-10 h-10 rounded-full shrink-0",
+                    tx.type === "expense" ? "bg-finance-budgeting/10 text-finance-budgeting" : "bg-success/15 text-success"
                   )}>
-                    {tx.type === "expense" ? (
-                      <ArrowUpRight className="w-4 h-4" />
-                    ) : (
-                      <ArrowDownLeft className="w-4 h-4" />
-                    )}
+                    <FinancialActivityIcon category={iconKey} className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {tx.note || (tx.type === "expense" ? "Expense" : "Income")}
+                    <p className="text-[15px] font-medium truncate text-foreground/95">
+                      {displayTitle}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(tx.date)}{cat && ` · ${cat.name}`}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formatDate(tx.date)}
                     </p>
                   </div>
                   <span className={cn(
-                    "text-sm font-medium tabular-nums shrink-0",
+                    "text-[15px] font-semibold tabular-nums shrink-0 tracking-tight",
                     tx.type === "expense" ? "text-foreground" : "text-success"
                   )}>
                     {tx.type === "expense" ? "-" : "+"}{fmt(tx.amount)}
@@ -72,7 +74,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
             })}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </FintechCard>
   );
 }
