@@ -28,10 +28,10 @@ export function MobileNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
       {/* Floating Add Button */}
-      <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10">
+      <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10 block pb-[env(safe-area-inset-bottom)]">
         <button
           onClick={() => setMobileAddOpen(true)}
-          className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 active:scale-95 transition-all"
+          className="flex items-center justify-center w-14 h-14 rounded-full bg-finance-budgeting text-finance-budgeting-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 active:scale-95 transition-all"
           aria-label="Add new item"
         >
           <Plus className="w-6 h-6" />
@@ -39,7 +39,7 @@ export function MobileNav() {
       </div>
 
       {/* Nav Bar */}
-      <nav className="flex items-center justify-around px-2 h-16 bg-background/95 backdrop-blur-lg border-t border-border">
+      <nav className="flex items-center justify-around px-2 h-16 bg-background/95 backdrop-blur-lg border-t border-border pb-[env(safe-area-inset-bottom)]">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"

@@ -9,15 +9,21 @@ import { AutoSyncProvider } from "@/components/sync/auto-sync-provider";
 import { OfflineBanner } from "@/components/sync/OfflineBanner";
 import { Loader2 } from "lucide-react";
 
+// Escape hatch for the local design-screenshot pipeline (scripts/screenshot-pages.mjs),
+// which has no real Supabase session but needs to reach pages behind auth.
+const SCREENSHOT_MODE = process.env.NEXT_PUBLIC_SCREENSHOT_MODE === "1";
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!SCREENSHOT_MODE && !loading && !user) {
       router.replace("/login");
     }
   }, [user, loading, router]);
+
+  if (SCREENSHOT_MODE) return <>{children}</>;
 
   if (loading) {
     return (
